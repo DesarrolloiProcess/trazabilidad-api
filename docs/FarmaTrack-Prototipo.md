@@ -16,36 +16,61 @@ Este prototipo cubre las 3 superficies del sistema (Portal Web del CEDI, App del
 
 ### Portal Web (CEDI / Administración)
 
-| # | Pantalla | Rol | Endpoint(s) |
-|---|---|---|---|
-| 1 | [Inicio de sesión](screenshots/01-login.png) | Público (previo a auth) | `POST /api/users/login` |
-| 2 | [Panel operativo (dashboard)](screenshots/02-panel-dashboard.png) | ADMIN, CEDI | `GET /api/deliveries`, `GET /api/routes` |
-| 3 | [Entregas — listado y filtros](screenshots/03-panel-entregas.png) | ADMIN, CEDI | `GET /api/deliveries` |
-| 4 | [Importar planilla (TXT) — diálogo](screenshots/04-panel-import-dialog.png) | ADMIN, CEDI | `POST /api/txt-import` |
-| 5 | [Importar planilla — éxito](screenshots/05-panel-import-success.png) | ADMIN, CEDI | `POST /api/txt-import` |
-| 6 | [Importar planilla — error (TXT mal formado)](screenshots/06-panel-import-error.png) | ADMIN, CEDI | `POST /api/txt-import` |
-| 7 | [Detalle de entrega](screenshots/07-panel-delivery-detail.png) | ADMIN, CEDI | `GET /api/deliveries/:id` |
-| 8 | [Rutas — asignar conductor / cambiar estado](screenshots/08-panel-rutas.png) | ADMIN, CEDI | `GET /api/routes`, `GET /api/users`, `PATCH /api/routes/:id/assign-driver`, `PATCH /api/routes/:id/status` |
-| 9 | [Centros de distribución](screenshots/09-panel-cedis.png) | ADMIN, CEDI | `GET /api/distribution-centers` |
+**1. Inicio de sesión** — Público (previo a autenticación) · `POST /api/users/login`
+![Inicio de sesión](screenshots/01-login.png)
+
+**2. Panel operativo (dashboard)** — ADMIN, CEDI · `GET /api/deliveries`, `GET /api/routes`
+![Panel operativo](screenshots/02-panel-dashboard.png)
+
+**3. Entregas — listado y filtros** — ADMIN, CEDI · `GET /api/deliveries`
+![Entregas](screenshots/03-panel-entregas.png)
+
+**4. Importar planilla (TXT) — diálogo** — ADMIN, CEDI · `POST /api/txt-import`
+![Importar planilla](screenshots/04-panel-import-dialog.png)
+
+**5. Importar planilla — éxito** — ADMIN, CEDI · `POST /api/txt-import`
+![Importar planilla éxito](screenshots/05-panel-import-success.png)
+
+**6. Importar planilla — error (TXT mal formado)** — ADMIN, CEDI · `POST /api/txt-import`
+![Importar planilla error](screenshots/06-panel-import-error.png)
+
+**7. Detalle de entrega** — ADMIN, CEDI · `GET /api/deliveries/:id`
+![Detalle de entrega](screenshots/07-panel-delivery-detail.png)
+
+**8. Rutas — asignar conductor / cambiar estado** — ADMIN, CEDI · `GET /api/routes`, `GET /api/users`, `PATCH /api/routes/:id/assign-driver`, `PATCH /api/routes/:id/status`
+![Rutas](screenshots/08-panel-rutas.png)
+
+**9. Centros de distribución** — ADMIN, CEDI · `GET /api/distribution-centers`
+![CEDIs](screenshots/09-panel-cedis.png)
 
 ### App Conductor (móvil, campo)
 
-| # | Pantalla | Rol | Endpoint(s) |
-|---|---|---|---|
-| 10 | [Mi ruta de hoy](screenshots/10-conductor-mi-ruta.png) | CONDUCTOR | `GET /api/routes?driverId=`, `GET /api/deliveries?routeId=` |
-| 11 | [Captura de entrega — recibir para transporte](screenshots/11-conductor-captura.png) / [formulario](screenshots/11b-conductor-captura-form.png) | CONDUCTOR | `GET /api/deliveries/:id`, `PATCH /api/deliveries/:id/status` |
-| 12 | [Captura de entrega — firma, foto, receptor, geo](screenshots/12-conductor-captura-llena.png) | CONDUCTOR | `POST /api/deliveries/:id/evidence` (o `POST /api/deliveries/:id/not-delivered`) |
+**10. Mi ruta de hoy** — CONDUCTOR · `GET /api/routes?driverId=`, `GET /api/deliveries?routeId=`
+![Mi ruta](screenshots/10-conductor-mi-ruta.png)
+
+**11. Captura de entrega — recibir para transporte / formulario** — CONDUCTOR · `GET /api/deliveries/:id`, `PATCH /api/deliveries/:id/status`
+
+![Captura inicial](screenshots/11-conductor-captura.png)
+![Formulario de captura](screenshots/11b-conductor-captura-form.png)
+
+**12. Captura de entrega — firma, foto, receptor, geo** — CONDUCTOR · `POST /api/deliveries/:id/evidence` (o `POST /api/deliveries/:id/not-delivered`)
+![Captura llena](screenshots/12-conductor-captura-llena.png)
 
 La firma se captura con un canvas real (pointer events), la foto dispara la cámara del dispositivo (`<input capture="environment">`) y la ubicación usa `navigator.geolocation` real del navegador — no son mocks visuales, funcionan de verdad en cualquier teléfono.
 
 ### Portal Cliente (público, sin login)
 
-| # | Pantalla | Rol | Endpoint(s) |
-|---|---|---|---|
-| 13 | [Consulta de pedido](screenshots/13-portal-login.png) | Público, verificado por guía + teléfono/documento | `GET /portal/my-deliveries/:trackingNumber` |
-| 14 | [Mis entregas (historial del cliente)](screenshots/14-portal-mis-entregas.png) | Público, verificado | `GET /portal/my-deliveries/:trackingNumber` |
-| 15 | [Detalle de guía (sin precios)](screenshots/15-portal-detalle.png) | Público, verificado | `GET /portal/deliveries/:trackingNumber` |
-| 16 | [Error — guía no encontrada](screenshots/16-portal-error-guia.png) | Público | `GET /portal/my-deliveries/:trackingNumber` |
+**13. Consulta de pedido** — Público, verificado por guía + teléfono/documento · `GET /portal/my-deliveries/:trackingNumber`
+![Consulta de pedido](screenshots/13-portal-login.png)
+
+**14. Mis entregas (historial del cliente)** — Público, verificado · `GET /portal/my-deliveries/:trackingNumber`
+![Mis entregas](screenshots/14-portal-mis-entregas.png)
+
+**15. Detalle de guía (sin precios)** — Público, verificado · `GET /portal/deliveries/:trackingNumber`
+![Detalle de guía](screenshots/15-portal-detalle.png)
+
+**16. Error — guía no encontrada** — Público · `GET /portal/my-deliveries/:trackingNumber`
+![Error guía no encontrada](screenshots/16-portal-error-guia.png)
 
 ---
 
