@@ -11,6 +11,7 @@ export interface IDeliveryRepository {
   getMany(query: IDeliveryQuery): Promise<{ data: Delivery[]; total: number }>;
   getById(id: string): Promise<Delivery | null>;
   getByTrackingNumber(trackingNumber: string): Promise<Delivery | null>;
+  getManyByClientId(clientId: string): Promise<Delivery[]>;
   getConfirmedInWindow(from: Date, to: Date): Promise<Delivery[]>;
   create(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery>;
   update(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery>;

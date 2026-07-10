@@ -7,10 +7,12 @@ import type { ITxtParserConfig } from '#src/shared/helpers/txtParser/domain/txtP
  *
  * El CEDI se toma del usuario autenticado que sube el archivo (no es una columna) y el
  * conductor se asigna después, desde el CEDI, vía PATCH /api/routes/:id/assign-driver.
+ * clienteNit identifica al cliente (destinatario institucional) para el portal de consulta;
+ * si el NIT no existe aún como cliente, se crea automáticamente durante la importación.
  */
 export const PLANILLA_TXT_CONFIG: ITxtParserConfig = {
   delimiter: '|',
-  expectedColumns: 10,
+  expectedColumns: 11,
   hasHeader: true,
 };
 
@@ -18,6 +20,7 @@ export const PLANILLA_COLUMNS = [
   'fecha',
   'routeCode',
   'trackingNumber',
+  'clienteNit',
   'direccion',
   'destinatarioNombre',
   'destinatarioTelefono',
@@ -33,6 +36,7 @@ export interface IPlanillaRow {
   fecha: string;
   routeCode: string;
   trackingNumber: string;
+  clienteNit: string;
   direccion: string;
   destinatarioNombre: string;
   destinatarioTelefono: string;
@@ -47,12 +51,13 @@ export function toPlanillaRow(fields: string[]): IPlanillaRow {
     fecha: fields[0] ?? '',
     routeCode: fields[1] ?? '',
     trackingNumber: fields[2] ?? '',
-    direccion: fields[3] ?? '',
-    destinatarioNombre: fields[4] ?? '',
-    destinatarioTelefono: fields[5] ?? '',
-    productoCodigo: fields[6] ?? '',
-    productoDescripcion: fields[7] ?? '',
-    productoCantidad: fields[8] ?? '',
-    productoPrecio: fields[9] ?? '',
+    clienteNit: fields[3] ?? '',
+    direccion: fields[4] ?? '',
+    destinatarioNombre: fields[5] ?? '',
+    destinatarioTelefono: fields[6] ?? '',
+    productoCodigo: fields[7] ?? '',
+    productoDescripcion: fields[8] ?? '',
+    productoCantidad: fields[9] ?? '',
+    productoPrecio: fields[10] ?? '',
   };
 }

@@ -11,6 +11,7 @@ function toEntity(row: DeliveryRow): Delivery {
   return new Delivery({
     id: row.id,
     routeId: row.route_id,
+    clientId: row.client_id,
     trackingNumber: row.tracking_number,
     address: row.address,
     recipientName: row.recipient_name,
@@ -55,6 +56,11 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
     return row ? toEntity(row) : null;
   }
 
+  async getManyByClientId(clientId: string): Promise<Delivery[]> {
+    const rows = await drizzleOrm().select().from(deliveries).where(eq(deliveries.client_id, clientId));
+    return rows.map(toEntity);
+  }
+
   async getConfirmedInWindow(from: Date, to: Date): Promise<Delivery[]> {
     const rows = await drizzleOrm()
       .select()
@@ -76,6 +82,7 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
     await executor.insert(deliveries).values({
       id: entity.id,
       route_id: entity.routeId,
+      client_id: entity.clientId,
       tracking_number: entity.trackingNumber,
       address: entity.address,
       recipient_name: entity.recipientName,

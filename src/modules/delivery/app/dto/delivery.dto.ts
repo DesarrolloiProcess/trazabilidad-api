@@ -3,6 +3,7 @@ import type { Delivery, DeliveryStatus, IDeliveryProduct } from '#src/modules/de
 export interface DeliveryDto {
   id: string;
   routeId: string;
+  clientId: string;
   trackingNumber: string;
   address: string;
   recipientName: string;
@@ -25,6 +26,7 @@ export function toDeliveryDto(entity: Delivery): DeliveryDto {
   return {
     id: entity.id,
     routeId: entity.routeId,
+    clientId: entity.clientId,
     trackingNumber: entity.trackingNumber,
     address: entity.address,
     recipientName: entity.recipientName,

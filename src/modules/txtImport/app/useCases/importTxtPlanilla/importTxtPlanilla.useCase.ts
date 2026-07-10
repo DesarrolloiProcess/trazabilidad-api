@@ -1,5 +1,5 @@
 import { TxtParserService } from '#src/shared/helpers/txtParser/app/txtParser.service.js';
-import type { ITransactionRepository } from '#src/shared/helpers/transactions/domain/transaction.js';
+import type { ITransaction, ITransactionRepository } from '#src/shared/helpers/transactions/domain/transaction.js';
 import type { IUuidRepository } from '#src/shared/helpers/uuidHandle/domain/uuidHandle.js';
 import { ValidationError } from '#src/shared/Errors/validationError.js';
 import { BusinessLogicError } from '#src/shared/Errors/businessLogicError.js';
@@ -8,6 +8,8 @@ import { Route } from '#src/modules/route/domain/route.entity.js';
 import type { IRouteRepository } from '#src/modules/route/domain/route.repository.js';
 import { Delivery, type IDeliveryProduct } from '#src/modules/delivery/domain/delivery.entity.js';
 import type { IDeliveryRepository } from '#src/modules/delivery/domain/delivery.repository.js';
+import { Client } from '#src/modules/client/domain/client.entity.js';
+import type { IClientRepository } from '#src/modules/client/domain/client.repository.js';
 
 import { PLANILLA_TXT_CONFIG, toPlanillaRow, type IPlanillaRow } from '#src/modules/txtImport/domain/planilla.schema.js';
 import type { ImportTxtPlanillaCommand } from '#src/modules/txtImport/app/useCases/importTxtPlanilla/importTxtPlanilla.command.js';
@@ -22,6 +24,7 @@ export class ImportTxtPlanillaUseCase {
   constructor(
     private readonly routeRepository: IRouteRepository,
     private readonly deliveryRepository: IDeliveryRepository,
+    private readonly clientRepository: IClientRepository,
     private readonly txtParser: TxtParserService,
     private readonly uuidHandle: IUuidRepository,
     private readonly transactionHandle: ITransactionRepository,
@@ -61,6 +64,7 @@ export class ImportTxtPlanillaUseCase {
 
     const deliveriesByTracking = this.groupByTrackingNumber(rows);
     const trackingNumbers = [...deliveriesByTracking.keys()];
+    const clientCache = new Map<string, Client>();
 
     await this.transactionHandle.buildTransaction(async (tx) => {
       await this.routeRepository.create(route, { tx });
@@ -68,6 +72,15 @@ export class ImportTxtPlanillaUseCase {
       for (const trackingNumber of trackingNumbers) {
         const groupRows = deliveriesByTracking.get(trackingNumber)!;
         const [firstGroupRow] = groupRows;
+
+        const client = await this.getOrCreateClient(
+          firstGroupRow.clienteNit,
+          firstGroupRow.destinatarioNombre,
+          firstGroupRow.destinatarioTelefono,
+          command.authUser.id,
+          clientCache,
+          tx,
+        );
 
         const products: IDeliveryProduct[] = groupRows.map((row) => ({
           code: row.productoCodigo,
@@ -79,6 +92,7 @@ export class ImportTxtPlanillaUseCase {
         const delivery = new Delivery({
           id: this.uuidHandle.uuid(),
           routeId: route.id,
+          clientId: client.id,
           trackingNumber,
           address: firstGroupRow.direccion,
           recipientName: firstGroupRow.destinatarioNombre,
@@ -113,6 +127,41 @@ export class ImportTxtPlanillaUseCase {
     };
   }
 
+  private async getOrCreateClient(
+    nit: string,
+    name: string,
+    phone: string,
+    authUserId: string,
+    cache: Map<string, Client>,
+    tx: ITransaction,
+  ): Promise<Client> {
+    const cached = cache.get(nit);
+    if (cached) return cached;
+
+    const existing = await this.clientRepository.getByNit(nit);
+    if (existing) {
+      cache.set(nit, existing);
+      return existing;
+    }
+
+    const now = new Date();
+    const client = new Client({
+      id: this.uuidHandle.uuid(),
+      nit,
+      name,
+      phone,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: authUserId,
+      updatedBy: authUserId,
+    });
+
+    const created = await this.clientRepository.create(client, { tx });
+    cache.set(nit, created);
+    return created;
+  }
+
   private groupByTrackingNumber(rows: RowWithLine[]): Map<string, IPlanillaRow[]> {
     const grouped = new Map<string, IPlanillaRow[]>();
 
@@ -132,6 +181,10 @@ export class ImportTxtPlanillaUseCase {
     for (const { lineNumber, row } of rows) {
       if (!row.routeCode) {
         errors.push(`Línea ${lineNumber}: routeCode (ruta/número de planilla) vacío`);
+      }
+
+      if (!row.clienteNit) {
+        errors.push(`Línea ${lineNumber}: clienteNit vacío`);
       }
 
       if (Number.isNaN(Date.parse(row.fecha))) {

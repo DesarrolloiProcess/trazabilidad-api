@@ -29,6 +29,7 @@ export interface IConfirmDeliveryData {
 export interface IDelivery {
   id: string;
   routeId: string;
+  clientId: string;
   trackingNumber: string;
   address: string;
   recipientName: string;
@@ -52,6 +53,7 @@ export interface IDelivery {
 export class Delivery {
   public readonly id: string;
   public readonly routeId: string;
+  public readonly clientId: string;
   public readonly trackingNumber: string;
   public readonly address: string;
   public readonly recipientName: string;
@@ -74,6 +76,7 @@ export class Delivery {
   constructor(props: IDelivery) {
     this.id = props.id;
     this.routeId = props.routeId;
+    this.clientId = props.clientId;
     this.trackingNumber = props.trackingNumber;
     this.address = props.address;
     this.recipientName = props.recipientName;

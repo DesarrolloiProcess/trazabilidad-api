@@ -20,6 +20,7 @@ export interface DeliveryProductRow {
 export const deliveries = mysqlTable('deliveries', {
   id: customBuffer('id').primaryKey(),
   route_id: customBuffer('route_id').notNull(),
+  client_id: customBuffer('client_id').notNull(),
   tracking_number: varchar('tracking_number', { length: 50 }).notNull().unique(),
   address: varchar('address', { length: 255 }).notNull(),
   recipient_name: varchar('recipient_name', { length: 150 }).notNull(),
