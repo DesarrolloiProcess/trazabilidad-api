@@ -6,11 +6,13 @@ import {
   getRouteByIdCtrl,
   listRoutesCtrl,
   updateRouteStatusCtrl,
+  assignDriverCtrl,
 } from '#src/modules/route/infrastructure/dependencies.js';
 import {
   getRouteByIdSchema,
   listRoutesSchema,
   updateRouteStatusSchema,
+  assignDriverSchema,
 } from '#src/modules/route/infrastructure/schema/route.schema.js';
 
 const router = Router();
@@ -29,6 +31,13 @@ router.patch(
   checkAuth.run([Role.ADMIN, Role.CEDI, Role.CONDUCTOR]),
   schemaValidation(updateRouteStatusSchema),
   updateRouteStatusCtrl.run,
+);
+
+router.patch(
+  '/:id/assign-driver',
+  checkAuth.run([Role.ADMIN, Role.CEDI]),
+  schemaValidation(assignDriverSchema),
+  assignDriverCtrl.run,
 );
 
 export default router;

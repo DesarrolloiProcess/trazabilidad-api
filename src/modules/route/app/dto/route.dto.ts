@@ -2,8 +2,9 @@ import type { Route, RouteStatus } from '#src/modules/route/domain/route.entity.
 
 export interface RouteDto {
   id: string;
+  code: string;
   distributionCenterId: string;
-  driverId: string;
+  driverId: string | null;
   date: Date;
   status: RouteStatus;
   createdAt: Date;
@@ -13,6 +14,7 @@ export interface RouteDto {
 export function toRouteDto(entity: Route): RouteDto {
   return {
     id: entity.id,
+    code: entity.code,
     distributionCenterId: entity.distributionCenterId,
     driverId: entity.driverId,
     date: entity.date,

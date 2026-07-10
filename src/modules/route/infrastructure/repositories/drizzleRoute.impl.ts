@@ -10,6 +10,7 @@ type RouteRow = typeof routes.$inferSelect;
 function toEntity(row: RouteRow): Route {
   return new Route({
     id: row.id,
+    code: row.code,
     distributionCenterId: row.distribution_center_id,
     driverId: row.driver_id,
     date: row.date,
@@ -58,6 +59,7 @@ export class DrizzleRouteImpl implements IRouteRepository {
 
     await executor.insert(routes).values({
       id: entity.id,
+      code: entity.code,
       distribution_center_id: entity.distributionCenterId,
       driver_id: entity.driverId,
       date: entity.date,
@@ -76,6 +78,7 @@ export class DrizzleRouteImpl implements IRouteRepository {
       .update(routes)
       .set({
         status: entity.status,
+        driver_id: entity.driverId,
         updated_by: entity.updatedBy,
       })
       .where(eq(routes.id, entity.id));

@@ -1,7 +1,7 @@
 export interface ImportResultDto {
   routeId: string;
+  routeCode: string;
   distributionCenterId: string;
-  driverId: string;
   date: Date;
   deliveriesCount: number;
   trackingNumbers: string[];

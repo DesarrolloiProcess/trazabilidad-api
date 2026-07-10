@@ -24,3 +24,11 @@ export const updateRouteStatusSchema = z.object({
   params: z.object({ id: uuidSchema }),
   query: z.object({}),
 });
+
+export const assignDriverSchema = z.object({
+  body: z.object({
+    driverId: uuidSchema,
+  }),
+  params: z.object({ id: uuidSchema }),
+  query: z.object({}),
+});

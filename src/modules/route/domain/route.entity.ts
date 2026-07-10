@@ -12,8 +12,9 @@ const ALLOWED_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
 
 export interface IRoute {
   id: string;
+  code: string;
   distributionCenterId: string;
-  driverId: string;
+  driverId: string | null;
   date: Date;
   status: RouteStatus;
   createdAt: Date;
@@ -24,8 +25,9 @@ export interface IRoute {
 
 export class Route {
   public readonly id: string;
+  public readonly code: string;
   public readonly distributionCenterId: string;
-  public readonly driverId: string;
+  public readonly driverId: string | null;
   public readonly date: Date;
   public readonly status: RouteStatus;
   public readonly createdAt: Date;
@@ -35,6 +37,7 @@ export class Route {
 
   constructor(props: IRoute) {
     this.id = props.id;
+    this.code = props.code;
     this.distributionCenterId = props.distributionCenterId;
     this.driverId = props.driverId;
     this.date = props.date;
@@ -53,5 +56,13 @@ export class Route {
     }
 
     return new Route({ ...this, status: newStatus, updatedAt: new Date(), updatedBy });
+  }
+
+  assignDriver(driverId: string, updatedBy: string): Route {
+    if (this.driverId !== null) {
+      throw new BusinessLogicError('La ruta ya tiene un conductor asignado');
+    }
+
+    return new Route({ ...this, driverId, updatedAt: new Date(), updatedBy });
   }
 }

@@ -19,7 +19,7 @@ export const deliveryRepository = new DrizzleDeliveryImpl();
 
 const getDeliveryByIdUseCase = new GetDeliveryByIdUseCase(deliveryRepository);
 const listDeliveriesUseCase = new ListDeliveriesUseCase(deliveryRepository);
-const advanceDeliveryStatusUseCase = new AdvanceDeliveryStatusUseCase(deliveryRepository);
+const advanceDeliveryStatusUseCase = new AdvanceDeliveryStatusUseCase(deliveryRepository, whatsappNotifierHandle);
 const deliveryEvidenceUseCase = new DeliveryEvidenceUseCase(deliveryRepository, whatsappNotifierHandle);
 const markNotDeliveredUseCase = new MarkNotDeliveredUseCase(deliveryRepository);
 const invoiceExportUseCase = new InvoiceExportUseCase(deliveryRepository);

@@ -2,7 +2,7 @@ import { TxtParserService } from '#src/shared/helpers/txtParser/app/txtParser.se
 import type { ITransactionRepository } from '#src/shared/helpers/transactions/domain/transaction.js';
 import type { IUuidRepository } from '#src/shared/helpers/uuidHandle/domain/uuidHandle.js';
 import { ValidationError } from '#src/shared/Errors/validationError.js';
-import { REGEX } from '#src/shared/constant/regex.constant.js';
+import { BusinessLogicError } from '#src/shared/Errors/businessLogicError.js';
 
 import { Route } from '#src/modules/route/domain/route.entity.js';
 import type { IRouteRepository } from '#src/modules/route/domain/route.repository.js';
@@ -28,6 +28,12 @@ export class ImportTxtPlanillaUseCase {
   ) {}
 
   async run(command: ImportTxtPlanillaCommand): Promise<ImportResultDto> {
+    if (!command.authUser.distributionCenterId) {
+      throw new BusinessLogicError('El usuario que importa la planilla debe pertenecer a un CEDI');
+    }
+
+    const distributionCenterId = command.authUser.distributionCenterId;
+
     const parsedRows = this.txtParser.parseAndValidate(command.content, PLANILLA_TXT_CONFIG);
 
     const rows: RowWithLine[] = parsedRows.map((parsedRow) => ({
@@ -42,8 +48,9 @@ export class ImportTxtPlanillaUseCase {
 
     const route = new Route({
       id: this.uuidHandle.uuid(),
-      distributionCenterId: firstRow.cediId,
-      driverId: firstRow.driverId,
+      code: firstRow.routeCode,
+      distributionCenterId,
+      driverId: null,
       date: new Date(firstRow.fecha),
       status: 'creada',
       createdAt: now,
@@ -98,8 +105,8 @@ export class ImportTxtPlanillaUseCase {
 
     return {
       routeId: route.id,
+      routeCode: route.code,
       distributionCenterId: route.distributionCenterId,
-      driverId: route.driverId,
       date: route.date,
       deliveriesCount: trackingNumbers.length,
       trackingNumbers,
@@ -123,12 +130,8 @@ export class ImportTxtPlanillaUseCase {
     const [{ row: firstRow }] = rows;
 
     for (const { lineNumber, row } of rows) {
-      if (!REGEX.UUID.test(row.cediId)) {
-        errors.push(`Línea ${lineNumber}: cediId inválido`);
-      }
-
-      if (!REGEX.UUID.test(row.driverId)) {
-        errors.push(`Línea ${lineNumber}: driverId inválido`);
+      if (!row.routeCode) {
+        errors.push(`Línea ${lineNumber}: routeCode (ruta/número de planilla) vacío`);
       }
 
       if (Number.isNaN(Date.parse(row.fecha))) {
@@ -143,8 +146,8 @@ export class ImportTxtPlanillaUseCase {
         errors.push(`Línea ${lineNumber}: precio de producto inválido`);
       }
 
-      if (row.cediId !== firstRow.cediId || row.driverId !== firstRow.driverId || row.fecha !== firstRow.fecha) {
-        errors.push(`Línea ${lineNumber}: todos los registros de la planilla deben pertenecer a la misma ruta (mismo CEDI, conductor y fecha)`);
+      if (row.routeCode !== firstRow.routeCode || row.fecha !== firstRow.fecha) {
+        errors.push(`Línea ${lineNumber}: todos los registros de la planilla deben pertenecer a la misma ruta (mismo routeCode y fecha)`);
       }
     }
 
