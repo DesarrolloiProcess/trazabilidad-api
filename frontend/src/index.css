@@ -1,0 +1,42 @@
+@import '@fontsource/barlow-condensed/500.css';
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/barlow-condensed/700.css';
+@import '@fontsource/public-sans/400.css';
+@import '@fontsource/public-sans/500.css';
+@import '@fontsource/public-sans/600.css';
+@import '@fontsource/public-sans/700.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-feature-settings: 'tnum' 1;
+  }
+
+  body {
+    @apply font-body text-navy antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-cold ring-offset-2 ring-offset-paper;
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/*
+  El "sello" es el elemento de firma visual de FarmaTrack: un hexágono con
+  muesca, inspirado en los sellos de garantía/cadena de frío de empaques
+  farmacéuticos. Se usa en las 3 superficies como lenguaje único de estado.
+*/
+.seal {
+  clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+}

@@ -1,0 +1,119 @@
+import { useQuery } from '@tanstack/react-query';
+import { Link, useParams } from 'react-router-dom';
+import { PanelLayout } from '#src/layouts/PanelLayout';
+import { apiClient } from '#src/api/client';
+import { SealLoader } from '#src/components/ui/SealLoader';
+import { ErrorBanner } from '#src/components/ui/ErrorBanner';
+import { StatusSeal } from '#src/components/status/StatusSeal';
+import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
+import { ApiError } from '#src/api/types';
+
+export function DeliveryDetailPage() {
+  const { id } = useParams<{ id: string }>();
+
+  const query = useQuery({
+    queryKey: ['delivery', id],
+    queryFn: () => apiClient.getDeliveryById(id!),
+    enabled: Boolean(id),
+  });
+
+  return (
+    <PanelLayout>
+      <div className="border-b border-slate-200 bg-white px-8 py-6">
+        <Link to="/panel/entregas" className="text-xs font-semibold text-cold hover:underline">
+          ← Volver a entregas
+        </Link>
+        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-navy">
+          {query.data ? query.data.trackingNumber : 'Detalle de entrega'}
+        </h1>
+      </div>
+
+      <div className="p-8">
+        {query.isError && (
+          <ErrorBanner message={query.error instanceof ApiError ? query.error.message : 'No pudimos cargar esta entrega.'} />
+        )}
+
+        {query.isLoading ? (
+          <SealLoader label="Cargando entrega…" />
+        ) : query.data ? (
+          <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+            <div className="space-y-5">
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <p className="mb-3 border-b border-slate-100 pb-2 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Contenido del envío
+                </p>
+                <ul className="divide-y divide-slate-100">
+                  {query.data.products.map((product) => (
+                    <li key={product.code} className="flex items-center justify-between py-2.5 text-sm">
+                      <div>
+                        <p className="font-medium text-navy">{product.description}</p>
+                        <p className="font-mono text-xs text-slate-400">{product.code}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono tabular-nums text-navy">× {product.quantity}</p>
+                        <p className="text-xs text-slate-400">${product.price.toLocaleString('es-CO')} c/u</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              {query.data.status === 'entregado_cliente' && (
+                <section className="rounded-xl border border-slate-200 bg-white p-5">
+                  <p className="mb-3 border-b border-slate-100 pb-2 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Evidencia de entrega
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-slate-400">Recibido por</p>
+                      <p className="mt-0.5 font-medium text-navy">{query.data.receiverName}</p>
+                      <p className="font-mono text-xs text-slate-500">CC {query.data.receiverIdNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-slate-400">Geolocalización</p>
+                      <p className="mt-0.5 font-mono text-xs text-navy">
+                        {query.data.latitude?.toFixed(4)}, {query.data.longitude?.toFixed(4)}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {query.data.status === 'no_entregado' && query.data.observation && (
+                <ErrorBanner title="Observación de no entrega" message={query.data.observation} />
+              )}
+            </div>
+
+            <aside className="h-fit rounded-xl border border-slate-200 bg-white p-5">
+              <p className="mb-3 border-b border-slate-100 pb-2 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Estado
+              </p>
+              <StatusSeal label={DELIVERY_STATUS_LABEL[query.data.status]} tone={DELIVERY_STATUS_TONE[query.data.status]} size="lg" />
+
+              <dl className="mt-4 space-y-2.5 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-slate-400">Destinatario</dt>
+                  <dd className="font-medium text-navy">{query.data.recipientName}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-400">Dirección</dt>
+                  <dd className="text-right font-medium text-navy">{query.data.address}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-slate-400">Teléfono</dt>
+                  <dd className="font-mono text-navy">{query.data.recipientPhone}</dd>
+                </div>
+                {query.data.deliveredAt && (
+                  <div className="flex justify-between">
+                    <dt className="text-slate-400">Fecha entrega</dt>
+                    <dd className="font-medium text-navy">{new Date(query.data.deliveredAt).toLocaleString('es-CO')}</dd>
+                  </div>
+                )}
+              </dl>
+            </aside>
+          </div>
+        ) : null}
+      </div>
+    </PanelLayout>
+  );
+}
