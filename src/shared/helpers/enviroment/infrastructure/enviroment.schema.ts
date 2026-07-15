@@ -10,8 +10,12 @@ export const envSchema = z.object({
   DB_PASSWORD: z.string().default(''),
   DB_NAME: z.string().min(1),
 
-  JWT_PRIVATE_KEY_PATH: z.string().min(1),
-  JWT_PUBLIC_KEY_PATH: z.string().min(1),
+  /** Ruta al archivo .pem — usada en local/dev. En plataformas cloud (Railway, etc.) se prefiere el contenido directo. */
+  JWT_PRIVATE_KEY_PATH: z.string().default(''),
+  JWT_PUBLIC_KEY_PATH: z.string().default(''),
+  /** Contenido PEM directo — evita depender de que el archivo llegue al filesystem del despliegue. */
+  JWT_PRIVATE_KEY: z.string().default(''),
+  JWT_PUBLIC_KEY: z.string().default(''),
   JWT_EXPIRES_IN: z.string().default('8h'),
 
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().default(10),

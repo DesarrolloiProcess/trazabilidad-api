@@ -4,9 +4,15 @@ import type { IJwtPayload, IJwtRepository } from '#src/shared/helpers/jwt/domain
 import { enviroment } from '#src/shared/helpers/enviroment/infrastructure/dependencies.js';
 import { UnauthorizedError } from '#src/shared/Errors/unauthorizedError.js';
 
+/** Prefiere el contenido PEM directo (env var) y cae a leer el archivo si no está configurado — necesario en despliegues donde no se sube el archivo de la llave. */
+function loadKey(content: string, path: string): string {
+  if (content.trim().length > 0) return content;
+  return fs.readFileSync(path, 'utf-8');
+}
+
 export class JwtImpl implements IJwtRepository {
-  private readonly privateKey = fs.readFileSync(enviroment.JWT.PRIVATE_KEY_PATH, 'utf-8');
-  private readonly publicKey = fs.readFileSync(enviroment.JWT.PUBLIC_KEY_PATH, 'utf-8');
+  private readonly privateKey = loadKey(enviroment.JWT.PRIVATE_KEY, enviroment.JWT.PRIVATE_KEY_PATH);
+  private readonly publicKey = loadKey(enviroment.JWT.PUBLIC_KEY, enviroment.JWT.PUBLIC_KEY_PATH);
 
   sign(payload: IJwtPayload): string {
     return jwt.sign(payload, this.privateKey, {

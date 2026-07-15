@@ -25,6 +25,8 @@ export class Enviroment implements IEnviroment {
     this.JWT = {
       PRIVATE_KEY_PATH: env.JWT_PRIVATE_KEY_PATH,
       PUBLIC_KEY_PATH: env.JWT_PUBLIC_KEY_PATH,
+      PRIVATE_KEY: env.JWT_PRIVATE_KEY,
+      PUBLIC_KEY: env.JWT_PUBLIC_KEY,
       EXPIRES_IN: env.JWT_EXPIRES_IN,
     };
     this.BCRYPT = { SALT_ROUNDS: env.BCRYPT_SALT_ROUNDS };

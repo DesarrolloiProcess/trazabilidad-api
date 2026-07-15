@@ -13,6 +13,8 @@ export interface IEnviroment {
   JWT: {
     PRIVATE_KEY_PATH: string;
     PUBLIC_KEY_PATH: string;
+    PRIVATE_KEY: string;
+    PUBLIC_KEY: string;
     EXPIRES_IN: string;
   };
   BCRYPT: {
