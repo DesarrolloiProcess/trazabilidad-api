@@ -29,10 +29,11 @@ function toEntity(row: UserRow): User {
 export class DrizzleUserImpl implements IUserRepository {
   async getMany(query: IUserQuery): Promise<{ data: User[]; total: number }> {
     const offset = (query.page - 1) * query.limit;
+    const filters = query.role ? eq(users.role, query.role) : undefined;
 
     const [rows, [{ total }]] = await Promise.all([
-      drizzleOrm().select().from(users).limit(query.limit).offset(offset),
-      drizzleOrm().select({ total: count() }).from(users),
+      drizzleOrm().select().from(users).where(filters).limit(query.limit).offset(offset),
+      drizzleOrm().select({ total: count() }).from(users).where(filters),
     ]);
 
     return { data: rows.map(toEntity), total };

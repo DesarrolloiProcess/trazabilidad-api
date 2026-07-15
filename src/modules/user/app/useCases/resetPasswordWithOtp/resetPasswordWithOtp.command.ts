@@ -7,7 +7,7 @@ export class ResetPasswordWithOtpCommand extends BaseCommand {
 
   @IsString()
   @IsNotEmpty()
-  otp!: string;
+  otpCode!: string;
 
   @IsString()
   @MinLength(8)

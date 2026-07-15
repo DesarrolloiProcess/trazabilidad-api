@@ -1,6 +1,6 @@
 import { mysqlTable, varchar, boolean } from 'drizzle-orm/mysql-core';
-import { customBuffer } from '#src/shared/lib/drizzle/types/customBuffer.js';
-import { baseColumns } from '#src/shared/lib/drizzle/models/_shared/baseColumns.js';
+import { customBuffer } from '../types/customBuffer.js';
+import { baseColumns } from './_shared/baseColumns.js';
 
 export const distributionCenters = mysqlTable('distribution_centers', {
   id: customBuffer('id').primaryKey(),

@@ -47,12 +47,15 @@ export class User {
     this.updatedBy = props.updatedBy;
   }
 
-  rename(data: { name: string; role: Role; distributionCenterId: string | null }, updatedBy: string): User {
+  rename(
+    data: { name?: string; role?: Role; distributionCenterId?: string | null },
+    updatedBy: string,
+  ): User {
     return new User({
       ...this,
-      name: data.name,
-      role: data.role,
-      distributionCenterId: data.distributionCenterId,
+      name: data.name ?? this.name,
+      role: data.role ?? this.role,
+      distributionCenterId: data.distributionCenterId !== undefined ? data.distributionCenterId : this.distributionCenterId,
       updatedAt: new Date(),
       updatedBy,
     });

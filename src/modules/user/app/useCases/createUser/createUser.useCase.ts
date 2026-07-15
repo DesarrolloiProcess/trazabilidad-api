@@ -6,6 +6,9 @@ import type { IEncryptRepository } from '#src/shared/helpers/encrypt/domain/encr
 import type { ITransaction } from '#src/shared/helpers/transactions/domain/transaction.js';
 import { BusinessLogicError } from '#src/shared/Errors/businessLogicError.js';
 
+/** Clave asignada cuando el ADMIN no define una al crear el usuario — se cambia luego vía "Cambiar contraseña". */
+const DEFAULT_PASSWORD = 'farmatrack123';
+
 export class CreateUserUseCase {
   constructor(
     private readonly repository: IUserRepository,
@@ -21,7 +24,7 @@ export class CreateUserUseCase {
     }
 
     const now = new Date();
-    const passwordHash = await this.encryptHandle.hash(command.password);
+    const passwordHash = await this.encryptHandle.hash(command.password ?? DEFAULT_PASSWORD);
 
     const entity = new User({
       id: this.uuidHandle.uuid(),

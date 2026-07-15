@@ -3,7 +3,9 @@ import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
   dialect: 'mysql',
-  schema: './src/shared/lib/drizzle/models/index.ts',
+  // drizzle-kit no resuelve extensiones .js que apuntan a fuente .ts (patrón NodeNext) —
+  // por eso apunta al build ya compilado. Los scripts db:generate/db:migrate corren `npm run build` antes.
+  schema: './dist/shared/lib/drizzle/models/index.js',
   out: './drizzle',
   dbCredentials: {
     host: process.env.DB_HOST ?? 'localhost',

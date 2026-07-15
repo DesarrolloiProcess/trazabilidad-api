@@ -53,3 +53,9 @@ export const invoiceExportSchema = z.object({
     to: z.string().datetime().or(z.string().date()),
   }),
 });
+
+export const markDeliveryInvoicedSchema = z.object({
+  body: z.object({}),
+  params: z.object({ id: uuidSchema }),
+  query: z.object({}),
+});

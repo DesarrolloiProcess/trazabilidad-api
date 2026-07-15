@@ -6,10 +6,11 @@ export class CreateUserCommand extends AuthenticatedCommand {
   @IsEmail()
   email!: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(8)
   @MaxLength(100)
-  password!: string;
+  password?: string;
 
   @IsString()
   @IsNotEmpty()

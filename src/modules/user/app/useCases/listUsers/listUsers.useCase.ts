@@ -6,6 +6,6 @@ export class ListUsersUseCase {
   constructor(private readonly repository: IUserRepository) {}
 
   async run(command: ListUsersCommand): Promise<{ data: User[]; total: number }> {
-    return this.repository.getMany({ page: command.page, limit: command.limit });
+    return this.repository.getMany({ page: command.page, limit: command.limit, role: command.role });
   }
 }

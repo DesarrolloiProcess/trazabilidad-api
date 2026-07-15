@@ -9,6 +9,7 @@ import {
   deliveryEvidenceCtrl,
   markNotDeliveredCtrl,
   invoiceExportCtrl,
+  markDeliveryInvoicedCtrl,
 } from '#src/modules/delivery/infrastructure/dependencies.js';
 import {
   getDeliveryByIdSchema,
@@ -17,6 +18,7 @@ import {
   deliveryEvidenceSchema,
   markNotDeliveredSchema,
   invoiceExportSchema,
+  markDeliveryInvoicedSchema,
 } from '#src/modules/delivery/infrastructure/schema/delivery.schema.js';
 
 const router = Router();
@@ -56,6 +58,13 @@ router.post(
   checkAuth.run([Role.CONDUCTOR]),
   schemaValidation(markNotDeliveredSchema),
   markNotDeliveredCtrl.run,
+);
+
+router.post(
+  '/:id/export-invoice',
+  checkAuth.run([Role.ADMIN]),
+  schemaValidation(markDeliveryInvoicedSchema),
+  markDeliveryInvoicedCtrl.run,
 );
 
 export default router;

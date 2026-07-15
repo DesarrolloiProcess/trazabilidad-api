@@ -18,6 +18,8 @@ export interface DeliveryDto {
   longitude: number | null;
   observation: string | null;
   deliveredAt: Date | null;
+  invoiced: boolean;
+  invoicedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +43,8 @@ export function toDeliveryDto(entity: Delivery): DeliveryDto {
     longitude: entity.longitude,
     observation: entity.observation,
     deliveredAt: entity.deliveredAt,
+    invoiced: entity.invoiced,
+    invoicedAt: entity.invoicedAt,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
   };

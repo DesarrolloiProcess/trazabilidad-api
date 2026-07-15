@@ -14,9 +14,10 @@ export const createDistributionCenterSchema = z.object({
 
 export const updateDistributionCenterSchema = z.object({
   body: z.object({
-    name: z.string().min(1).max(150),
-    city: z.string().min(1).max(100),
-    address: z.string().min(1).max(255),
+    name: z.string().min(1).max(150).optional(),
+    city: z.string().min(1).max(100).optional(),
+    address: z.string().min(1).max(255).optional(),
+    active: z.boolean().optional(),
   }),
   params: z.object({ id: uuidSchema }),
   query: z.object({}),

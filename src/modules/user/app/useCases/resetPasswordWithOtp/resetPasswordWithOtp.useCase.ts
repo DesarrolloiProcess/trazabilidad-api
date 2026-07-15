@@ -18,7 +18,7 @@ export class ResetPasswordWithOtpUseCase {
       throw new EntityNotFoundError('Usuario', command.email);
     }
 
-    if (!user.isOtpValid(command.otp)) {
+    if (!user.isOtpValid(command.otpCode)) {
       throw new UnauthorizedError('El código OTP es inválido o ha expirado');
     }
 

@@ -6,7 +6,7 @@ import { Role } from '#src/shared/constant/roles.constant.js';
 export const createUserSchema = z.object({
   body: z.object({
     email: z.string().email(),
-    password: z.string().min(8).max(100),
+    password: z.string().min(8).max(100).optional(),
     name: z.string().min(1).max(150),
     role: z.nativeEnum(Role),
     distributionCenterId: uuidSchema.optional(),
@@ -17,9 +17,10 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = z.object({
   body: z.object({
-    name: z.string().min(1).max(150),
-    role: z.nativeEnum(Role),
+    name: z.string().min(1).max(150).optional(),
+    role: z.nativeEnum(Role).optional(),
     distributionCenterId: uuidSchema.optional(),
+    active: z.boolean().optional(),
   }),
   params: z.object({ id: uuidSchema }),
   query: z.object({}),
@@ -40,7 +41,9 @@ export const getUserByIdSchema = z.object({
 export const listUsersSchema = z.object({
   body: z.object({}),
   params: z.object({}),
-  query: paginationSchema,
+  query: paginationSchema.extend({
+    role: z.nativeEnum(Role).optional(),
+  }),
 });
 
 export const loginSchema = z.object({
@@ -72,7 +75,7 @@ export const requestOtpSchema = z.object({
 export const resetPasswordWithOtpSchema = z.object({
   body: z.object({
     email: z.string().email(),
-    otp: z.string().min(1),
+    otpCode: z.string().min(1),
     newPassword: z.string().min(8).max(100),
   }),
   params: z.object({}),

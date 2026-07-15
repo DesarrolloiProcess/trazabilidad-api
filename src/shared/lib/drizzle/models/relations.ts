@@ -1,9 +1,10 @@
 import { relations } from 'drizzle-orm';
-import { users } from '#src/shared/lib/drizzle/models/user.schema.js';
-import { distributionCenters } from '#src/shared/lib/drizzle/models/distributionCenter.schema.js';
-import { routes } from '#src/shared/lib/drizzle/models/route.schema.js';
-import { deliveries } from '#src/shared/lib/drizzle/models/delivery.schema.js';
-import { clients } from '#src/shared/lib/drizzle/models/client.schema.js';
+import { users } from './user.schema.js';
+import { distributionCenters } from './distributionCenter.schema.js';
+import { routes } from './route.schema.js';
+import { deliveries } from './delivery.schema.js';
+import { deliveryProducts } from './deliveryProduct.schema.js';
+import { clients } from './client.schema.js';
 
 export const usersRelations = relations(users, ({ one }) => ({
   distributionCenter: one(distributionCenters, {
@@ -32,7 +33,7 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   deliveries: many(deliveries),
 }));
 
-export const deliveriesRelations = relations(deliveries, ({ one }) => ({
+export const deliveriesRelations = relations(deliveries, ({ one, many }) => ({
   route: one(routes, {
     fields: [deliveries.route_id],
     references: [routes.id],
@@ -40,5 +41,13 @@ export const deliveriesRelations = relations(deliveries, ({ one }) => ({
   client: one(clients, {
     fields: [deliveries.client_id],
     references: [clients.id],
+  }),
+  products: many(deliveryProducts),
+}));
+
+export const deliveryProductsRelations = relations(deliveryProducts, ({ one }) => ({
+  delivery: one(deliveries, {
+    fields: [deliveryProducts.delivery_id],
+    references: [deliveries.id],
   }),
 }));

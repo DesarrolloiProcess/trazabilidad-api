@@ -5,7 +5,6 @@ import { Role } from '#src/shared/constant/roles.constant.js';
 import {
   createUserCtrl,
   updateUserCtrl,
-  deleteUserCtrl,
   getUserByIdCtrl,
   listUsersCtrl,
   loginCtrl,
@@ -16,7 +15,6 @@ import {
 import {
   createUserSchema,
   updateUserSchema,
-  deleteUserSchema,
   getUserByIdSchema,
   listUsersSchema,
   loginSchema,
@@ -29,8 +27,8 @@ const router = Router();
 
 // Rutas públicas de autenticación
 router.post('/login', schemaValidation(loginSchema), loginCtrl.run);
-router.post('/otp/request', schemaValidation(requestOtpSchema), requestOtpCtrl.run);
-router.post('/otp/reset-password', schemaValidation(resetPasswordWithOtpSchema), resetPasswordWithOtpCtrl.run);
+router.post('/request-otp', schemaValidation(requestOtpSchema), requestOtpCtrl.run);
+router.post('/reset-password', schemaValidation(resetPasswordWithOtpSchema), resetPasswordWithOtpCtrl.run);
 
 // Rutas autenticadas
 router.post(
@@ -43,7 +41,6 @@ router.post(
 router.get('/', checkAuth.run([Role.ADMIN]), schemaValidation(listUsersSchema), listUsersCtrl.run);
 router.get('/:id', checkAuth.run([Role.ADMIN]), schemaValidation(getUserByIdSchema), getUserByIdCtrl.run);
 router.post('/', checkAuth.run([Role.ADMIN]), schemaValidation(createUserSchema), createUserCtrl.run);
-router.put('/:id', checkAuth.run([Role.ADMIN]), schemaValidation(updateUserSchema), updateUserCtrl.run);
-router.delete('/:id', checkAuth.run([Role.ADMIN]), schemaValidation(deleteUserSchema), deleteUserCtrl.run);
+router.patch('/:id', checkAuth.run([Role.ADMIN]), schemaValidation(updateUserSchema), updateUserCtrl.run);
 
 export default router;

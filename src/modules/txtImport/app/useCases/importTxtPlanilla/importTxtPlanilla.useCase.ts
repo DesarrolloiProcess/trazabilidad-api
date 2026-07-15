@@ -107,6 +107,8 @@ export class ImportTxtPlanillaUseCase {
           longitude: null,
           observation: null,
           deliveredAt: null,
+          invoiced: false,
+          invoicedAt: null,
           createdAt: now,
           updatedAt: now,
           createdBy: command.authUser.id,

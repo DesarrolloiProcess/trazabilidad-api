@@ -1,13 +1,25 @@
-import { and, eq, gte, lte, count, type SQL } from 'drizzle-orm';
+import { and, eq, gte, lte, count, inArray, type SQL } from 'drizzle-orm';
 import { drizzleOrm } from '#src/shared/lib/drizzle/connection.js';
 import { deliveries } from '#src/shared/lib/drizzle/models/delivery.schema.js';
-import { Delivery } from '#src/modules/delivery/domain/delivery.entity.js';
+import { deliveryProducts } from '#src/shared/lib/drizzle/models/deliveryProduct.schema.js';
+import { uuidHandle } from '#src/shared/helpers/uuidHandle/infrastructure/dependencies.js';
+import { Delivery, type IDeliveryProduct } from '#src/modules/delivery/domain/delivery.entity.js';
 import type { IDeliveryQuery, IDeliveryRepository } from '#src/modules/delivery/domain/delivery.repository.js';
 import type { ITransaction } from '#src/shared/helpers/transactions/domain/transaction.js';
 
 type DeliveryRow = typeof deliveries.$inferSelect;
+type DeliveryProductRow = typeof deliveryProducts.$inferSelect;
 
-function toEntity(row: DeliveryRow): Delivery {
+function toProduct(row: DeliveryProductRow): IDeliveryProduct {
+  return {
+    code: row.code,
+    description: row.description,
+    quantity: row.quantity,
+    price: Number(row.price),
+  };
+}
+
+function toEntity(row: DeliveryRow, products: IDeliveryProduct[]): Delivery {
   return new Delivery({
     id: row.id,
     routeId: row.route_id,
@@ -16,7 +28,7 @@ function toEntity(row: DeliveryRow): Delivery {
     address: row.address,
     recipientName: row.recipient_name,
     recipientPhone: row.recipient_phone,
-    products: row.products,
+    products,
     status: row.status,
     signatureUrl: row.signature_url,
     photoUrl: row.photo_url,
@@ -26,11 +38,33 @@ function toEntity(row: DeliveryRow): Delivery {
     longitude: row.longitude === null ? null : Number(row.longitude),
     observation: row.observation,
     deliveredAt: row.delivered_at,
+    invoiced: row.invoiced,
+    invoicedAt: row.invoiced_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     createdBy: row.created_by,
     updatedBy: row.updated_by,
   });
+}
+
+/** Trae y agrupa los renglones de delivery_products de un lote de entregas en una sola consulta (evita el N+1). */
+async function attachProducts(rows: DeliveryRow[]): Promise<Delivery[]> {
+  if (rows.length === 0) return [];
+
+  const deliveryIds = rows.map((row) => row.id);
+  const productRows = await drizzleOrm()
+    .select()
+    .from(deliveryProducts)
+    .where(inArray(deliveryProducts.delivery_id, deliveryIds));
+
+  const productsByDeliveryId = new Map<string, IDeliveryProduct[]>();
+  for (const productRow of productRows) {
+    const list = productsByDeliveryId.get(productRow.delivery_id) ?? [];
+    list.push(toProduct(productRow));
+    productsByDeliveryId.set(productRow.delivery_id, list);
+  }
+
+  return rows.map((row) => toEntity(row, productsByDeliveryId.get(row.id) ?? []));
 }
 
 export class DrizzleDeliveryImpl implements IDeliveryRepository {
@@ -43,22 +77,28 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       drizzleOrm().select({ total: count() }).from(deliveries).where(filters),
     ]);
 
-    return { data: rows.map(toEntity), total };
+    return { data: await attachProducts(rows), total };
   }
 
   async getById(id: string): Promise<Delivery | null> {
     const [row] = await drizzleOrm().select().from(deliveries).where(eq(deliveries.id, id)).limit(1);
-    return row ? toEntity(row) : null;
+    if (!row) return null;
+
+    const [entity] = await attachProducts([row]);
+    return entity;
   }
 
   async getByTrackingNumber(trackingNumber: string): Promise<Delivery | null> {
     const [row] = await drizzleOrm().select().from(deliveries).where(eq(deliveries.tracking_number, trackingNumber)).limit(1);
-    return row ? toEntity(row) : null;
+    if (!row) return null;
+
+    const [entity] = await attachProducts([row]);
+    return entity;
   }
 
   async getManyByClientId(clientId: string): Promise<Delivery[]> {
     const rows = await drizzleOrm().select().from(deliveries).where(eq(deliveries.client_id, clientId));
-    return rows.map(toEntity);
+    return attachProducts(rows);
   }
 
   async getConfirmedInWindow(from: Date, to: Date): Promise<Delivery[]> {
@@ -73,7 +113,7 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
         ),
       );
 
-    return rows.map(toEntity);
+    return attachProducts(rows);
   }
 
   async create(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery> {
@@ -87,7 +127,6 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       address: entity.address,
       recipient_name: entity.recipientName,
       recipient_phone: entity.recipientPhone,
-      products: entity.products,
       status: entity.status,
       signature_url: entity.signatureUrl,
       photo_url: entity.photoUrl,
@@ -97,9 +136,26 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       longitude: entity.longitude === null ? null : String(entity.longitude),
       observation: entity.observation,
       delivered_at: entity.deliveredAt,
+      invoiced: entity.invoiced,
+      invoiced_at: entity.invoicedAt,
       created_by: entity.createdBy,
       updated_by: entity.updatedBy,
     });
+
+    if (entity.products.length > 0) {
+      await executor.insert(deliveryProducts).values(
+        entity.products.map((product) => ({
+          id: uuidHandle.uuid(),
+          delivery_id: entity.id,
+          code: product.code,
+          description: product.description,
+          quantity: product.quantity,
+          price: String(product.price),
+          created_by: entity.createdBy,
+          updated_by: entity.updatedBy,
+        })),
+      );
+    }
 
     return entity;
   }
@@ -119,6 +175,8 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
         longitude: entity.longitude === null ? null : String(entity.longitude),
         observation: entity.observation,
         delivered_at: entity.deliveredAt,
+        invoiced: entity.invoiced,
+        invoiced_at: entity.invoicedAt,
         updated_by: entity.updatedBy,
       })
       .where(eq(deliveries.id, entity.id));

@@ -4,6 +4,7 @@ import type { IUserRepository } from '#src/modules/user/domain/user.repository.j
 import type { IUuidRepository } from '#src/shared/helpers/uuidHandle/domain/uuidHandle.js';
 import type { RequestOtpCommand } from '#src/modules/user/app/useCases/requestOtp/requestOtp.command.js';
 import type { ITransaction } from '#src/shared/helpers/transactions/domain/transaction.js';
+import type { RequestOtpResultDto } from '#src/modules/user/app/dto/requestOtpResult.dto.js';
 
 const OTP_EXPIRATION_MINUTES = 10;
 
@@ -17,7 +18,7 @@ export class RequestOtpUseCase {
     private readonly uuidHandle: IUuidRepository & IShortCodeGenerator,
   ) {}
 
-  async run(command: RequestOtpCommand, transaction?: ITransaction): Promise<void> {
+  async run(command: RequestOtpCommand, transaction?: ITransaction): Promise<RequestOtpResultDto> {
     const user = await this.repository.getByEmail(command.email);
 
     if (!user) {
@@ -30,5 +31,7 @@ export class RequestOtpUseCase {
     const updated = user.generateOtp(otpCode, otpExpiresAt);
 
     await this.repository.update(updated, { tx: transaction });
+
+    return { otpCode, expiresAt: otpExpiresAt };
   }
 }

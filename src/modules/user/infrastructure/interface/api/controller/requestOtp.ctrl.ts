@@ -8,8 +8,8 @@ export class RequestOtpCtrl {
   run = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const command = await RequestOtpCommand.create(req.body);
-      await this.useCase.run(command);
-      res.status(204).send();
+      const result = await this.useCase.run(command);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }

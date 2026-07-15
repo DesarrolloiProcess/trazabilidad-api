@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { datetime } from 'drizzle-orm/mysql-core';
-import { customBuffer } from '#src/shared/lib/drizzle/types/customBuffer.js';
+import { customBuffer } from '../../types/customBuffer.js';
 
 export const baseColumns = {
   created_at: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),

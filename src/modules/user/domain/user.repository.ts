@@ -1,9 +1,11 @@
 import type { ITransaction } from '#src/shared/helpers/transactions/domain/transaction.js';
 import type { User } from '#src/modules/user/domain/user.entity.js';
+import type { Role } from '#src/shared/constant/roles.constant.js';
 
 export interface IUserQuery {
   page: number;
   limit: number;
+  role?: Role;
 }
 
 export interface IUserRepository {

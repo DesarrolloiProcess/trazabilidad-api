@@ -14,10 +14,14 @@ export class UpdateDistributionCenterUseCase {
       throw new EntityNotFoundError('CEDI', command.id);
     }
 
-    const updated = current.rename(
+    let updated = current.rename(
       { name: command.name, city: command.city, address: command.address },
       command.authUser.id,
     );
+
+    if (command.active !== undefined) {
+      updated = command.active ? updated.activate(command.authUser.id) : updated.deactivate(command.authUser.id);
+    }
 
     return this.repository.update(updated, { tx: transaction });
   }

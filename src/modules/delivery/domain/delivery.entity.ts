@@ -44,6 +44,8 @@ export interface IDelivery {
   longitude: number | null;
   observation: string | null;
   deliveredAt: Date | null;
+  invoiced: boolean;
+  invoicedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   createdBy: string | null;
@@ -68,6 +70,8 @@ export class Delivery {
   public readonly longitude: number | null;
   public readonly observation: string | null;
   public readonly deliveredAt: Date | null;
+  public readonly invoiced: boolean;
+  public readonly invoicedAt: Date | null;
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
   public readonly createdBy: string | null;
@@ -91,6 +95,8 @@ export class Delivery {
     this.longitude = props.longitude;
     this.observation = props.observation;
     this.deliveredAt = props.deliveredAt;
+    this.invoiced = props.invoiced;
+    this.invoicedAt = props.invoicedAt;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.createdBy = props.createdBy;
@@ -140,5 +146,19 @@ export class Delivery {
       updatedAt: new Date(),
       updatedBy,
     });
+  }
+
+  marcarFacturada(updatedBy: string): Delivery {
+    if (this.status !== 'entregado_cliente') {
+      throw new BusinessLogicError('Solo se puede exportar a facturación una entrega ya confirmada');
+    }
+
+    if (this.invoiced) {
+      throw new BusinessLogicError('Esta entrega ya fue exportada a facturación');
+    }
+
+    const now = new Date();
+
+    return new Delivery({ ...this, invoiced: true, invoicedAt: now, updatedAt: now, updatedBy });
   }
 }

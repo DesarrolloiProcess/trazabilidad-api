@@ -1,6 +1,8 @@
-import { mysqlTable, varchar, json, mysqlEnum, decimal, datetime } from 'drizzle-orm/mysql-core';
-import { customBuffer } from '#src/shared/lib/drizzle/types/customBuffer.js';
-import { baseColumns } from '#src/shared/lib/drizzle/models/_shared/baseColumns.js';
+import { mysqlTable, varchar, mysqlEnum, decimal, datetime, boolean, index } from 'drizzle-orm/mysql-core';
+import { customBuffer } from '../types/customBuffer.js';
+import { baseColumns } from './_shared/baseColumns.js';
+import { routes } from './route.schema.js';
+import { clients } from './client.schema.js';
 
 export const deliveryStatusValues = [
   'creado',
@@ -10,30 +12,38 @@ export const deliveryStatusValues = [
   'no_entregado',
 ] as const;
 
-export interface DeliveryProductRow {
-  code: string;
-  description: string;
-  quantity: number;
-  price: number;
-}
-
-export const deliveries = mysqlTable('deliveries', {
-  id: customBuffer('id').primaryKey(),
-  route_id: customBuffer('route_id').notNull(),
-  client_id: customBuffer('client_id').notNull(),
-  tracking_number: varchar('tracking_number', { length: 50 }).notNull().unique(),
-  address: varchar('address', { length: 255 }).notNull(),
-  recipient_name: varchar('recipient_name', { length: 150 }).notNull(),
-  recipient_phone: varchar('recipient_phone', { length: 20 }).notNull(),
-  products: json('products').$type<DeliveryProductRow[]>().notNull(),
-  status: mysqlEnum('status', deliveryStatusValues).notNull().default('creado'),
-  signature_url: varchar('signature_url', { length: 255 }),
-  photo_url: varchar('photo_url', { length: 255 }),
-  receiver_name: varchar('receiver_name', { length: 150 }),
-  receiver_id_number: varchar('receiver_id_number', { length: 20 }),
-  latitude: decimal('latitude', { precision: 10, scale: 7 }),
-  longitude: decimal('longitude', { precision: 10, scale: 7 }),
-  observation: varchar('observation', { length: 500 }),
-  delivered_at: datetime('delivered_at'),
-  ...baseColumns,
-});
+export const deliveries = mysqlTable(
+  'deliveries',
+  {
+    id: customBuffer('id').primaryKey(),
+    route_id: customBuffer('route_id')
+      .notNull()
+      .references(() => routes.id),
+    client_id: customBuffer('client_id')
+      .notNull()
+      .references(() => clients.id),
+    tracking_number: varchar('tracking_number', { length: 50 }).notNull().unique(),
+    address: varchar('address', { length: 255 }).notNull(),
+    recipient_name: varchar('recipient_name', { length: 150 }).notNull(),
+    recipient_phone: varchar('recipient_phone', { length: 20 }).notNull(),
+    status: mysqlEnum('status', deliveryStatusValues).notNull().default('creado'),
+    /** Coordenadas del destino (geocodificadas al importar), para ubicar la entrega en el mapa antes de que se confirme. */
+    destination_latitude: decimal('destination_latitude', { precision: 10, scale: 7 }),
+    destination_longitude: decimal('destination_longitude', { precision: 10, scale: 7 }),
+    signature_url: varchar('signature_url', { length: 255 }),
+    photo_url: varchar('photo_url', { length: 255 }),
+    receiver_name: varchar('receiver_name', { length: 150 }),
+    receiver_id_number: varchar('receiver_id_number', { length: 20 }),
+    latitude: decimal('latitude', { precision: 10, scale: 7 }),
+    longitude: decimal('longitude', { precision: 10, scale: 7 }),
+    observation: varchar('observation', { length: 500 }),
+    delivered_at: datetime('delivered_at'),
+    invoiced: boolean('invoiced').notNull().default(false),
+    invoiced_at: datetime('invoiced_at'),
+    ...baseColumns,
+  },
+  (table) => ({
+    routeIdIdx: index('deliveries_route_id_idx').on(table.route_id),
+    clientIdIdx: index('deliveries_client_id_idx').on(table.client_id),
+  }),
+);

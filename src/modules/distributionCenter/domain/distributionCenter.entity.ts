@@ -33,12 +33,12 @@ export class DistributionCenter {
     this.updatedBy = props.updatedBy;
   }
 
-  rename(data: { name: string; city: string; address: string }, updatedBy: string): DistributionCenter {
+  rename(data: { name?: string; city?: string; address?: string }, updatedBy: string): DistributionCenter {
     return new DistributionCenter({
       ...this,
-      name: data.name,
-      city: data.city,
-      address: data.address,
+      name: data.name ?? this.name,
+      city: data.city ?? this.city,
+      address: data.address ?? this.address,
       updatedAt: new Date(),
       updatedBy,
     });
