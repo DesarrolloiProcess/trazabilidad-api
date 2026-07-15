@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+.env.*.local
+*.log
+*.tsbuildinfo
+docs/_prototipo-print.html
+frontend
+demo-server
