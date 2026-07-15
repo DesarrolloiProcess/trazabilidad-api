@@ -1,16 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { PanelLayout } from '#src/layouts/PanelLayout';
 import { apiClient } from '#src/api/client';
 import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
+import { Button } from '#src/components/ui/Button';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
+import { generateActaPdf } from '#src/utils/generateActaPdf';
 
 export function DeliveryDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const query = useQuery({
     queryKey: ['delivery', id],
@@ -18,6 +24,36 @@ export function DeliveryDetailPage() {
     enabled: Boolean(id),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
+
+  const exportMutation = useMutation({
+    mutationFn: () => apiClient.exportInvoice(id!),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['delivery', id] }),
+  });
+
+  const handleDownloadActa = async () => {
+    if (!query.data) return;
+    setPdfError(null);
+    setGeneratingPdf(true);
+    try {
+      await generateActaPdf({
+        trackingNumber: query.data.trackingNumber,
+        address: query.data.address,
+        recipientName: query.data.recipientName,
+        products: query.data.products,
+        receiverName: query.data.receiverName,
+        receiverIdNumber: query.data.receiverIdNumber,
+        deliveredAt: query.data.deliveredAt,
+        latitude: query.data.latitude,
+        longitude: query.data.longitude,
+        signatureUrl: query.data.signatureUrl,
+        photoUrl: query.data.photoUrl,
+      });
+    } catch {
+      setPdfError('No pudimos generar el acta de entrega. Intenta nuevamente.');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
 
   return (
     <PanelLayout>
@@ -118,6 +154,34 @@ export function DeliveryDetailPage() {
                   <p className="mt-0.5 text-xs text-navy/70">
                     Desde {new Date(query.data.deliveredAt).toLocaleString('es-CO')}
                   </p>
+                  {query.data.invoiced ? (
+                    <p className="mt-2 text-xs font-semibold text-dispensed">
+                      Ya exportada{query.data.invoicedAt && ` · ${new Date(query.data.invoicedAt).toLocaleString('es-CO')}`}
+                    </p>
+                  ) : (
+                    <Button
+                      size="md"
+                      className="mt-2.5 w-full"
+                      isLoading={exportMutation.isPending}
+                      onClick={() => exportMutation.mutate()}
+                    >
+                      Exportar a facturación
+                    </Button>
+                  )}
+                  {exportMutation.isError && (
+                    <p className="mt-1.5 text-xs font-medium text-controlled">
+                      {exportMutation.error instanceof ApiError ? exportMutation.error.message : 'No se pudo exportar.'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {query.data.status === 'entregado_cliente' && (
+                <div className="mt-3">
+                  <Button variant="secondary" className="w-full" isLoading={generatingPdf} onClick={handleDownloadActa}>
+                    Descargar acta de entrega
+                  </Button>
+                  {pdfError && <p className="mt-1.5 text-xs font-medium text-controlled">{pdfError}</p>}
                 </div>
               )}
 

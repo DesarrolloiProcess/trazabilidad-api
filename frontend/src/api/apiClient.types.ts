@@ -1,4 +1,6 @@
 import type {
+  CreateDistributionCenterInput,
+  CreateUserInput,
   DeliveryDto,
   DeliveryEvidenceInput,
   DeliveryStatus,
@@ -9,8 +11,11 @@ import type {
   PagedResult,
   PendingVerificationDto,
   PublicDeliveryDto,
+  RequestOtpResultDto,
   RouteDto,
   RouteStatus,
+  UpdateDistributionCenterInput,
+  UpdateUserInput,
   UserDto,
 } from '#src/api/types';
 
@@ -34,6 +39,9 @@ export interface ListRoutesParams {
  */
 export interface ApiClient {
   login(email: string, password: string): Promise<LoginResultDto>;
+  changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  requestPasswordResetOtp(email: string): Promise<RequestOtpResultDto>;
+  resetPasswordWithOtp(email: string, otpCode: string, newPassword: string): Promise<void>;
 
   importTxtPlanilla(content: string, distributionCenterId?: string): Promise<ImportResultDto>;
 
@@ -52,9 +60,19 @@ export interface ApiClient {
   advanceDeliveryStatus(id: string, status: DeliveryStatus): Promise<DeliveryDto>;
   submitDeliveryEvidence(id: string, data: DeliveryEvidenceInput): Promise<DeliveryDto>;
   markNotDelivered(id: string, observation: string): Promise<DeliveryDto>;
+  /** Marca la entrega como exportada a facturación (requiere estado 'entregado_cliente'). */
+  exportInvoice(id: string): Promise<DeliveryDto>;
 
   listDistributionCenters(): Promise<DistributionCenterDto[]>;
+  createDistributionCenter(input: CreateDistributionCenterInput): Promise<DistributionCenterDto>;
+  updateDistributionCenter(id: string, input: UpdateDistributionCenterInput): Promise<DistributionCenterDto>;
+
+  /** Conductores activos (para asignar rutas) — subconjunto de listUsers. */
   listDrivers(): Promise<UserDto[]>;
+  /** Todos los usuarios, cualquier rol (gestión de usuarios, ADMIN). */
+  listUsers(): Promise<UserDto[]>;
+  createUser(input: CreateUserInput): Promise<UserDto>;
+  updateUser(id: string, input: UpdateUserInput): Promise<UserDto>;
 
   trackDelivery(trackingNumber: string, verificationValue: string): Promise<PublicDeliveryDto>;
   listMyDeliveries(trackingNumber: string, verificationValue: string): Promise<MyDeliveriesDto>;

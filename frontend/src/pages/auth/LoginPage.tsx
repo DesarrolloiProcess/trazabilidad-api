@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -10,11 +11,13 @@ import { Button } from '#src/components/ui/Button';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { loginSchema, type LoginFormValues } from '#src/pages/auth/loginSchema';
 import { roleHome } from '#src/routes/roleHome';
+import { ForgotPasswordDialog } from '#src/pages/auth/ForgotPasswordDialog';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const login = useAuthStore((s) => s.login);
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   const {
     register,
@@ -80,12 +83,22 @@ export function LoginPage() {
           </Button>
 
           <p className="text-center text-xs text-white/30">Demo: cualquier correo de la lista · contraseña farmatrack123</p>
+
+          <button
+            type="button"
+            onClick={() => setForgotOpen(true)}
+            className="block w-full text-center text-xs font-semibold text-cold hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
         </form>
 
         <Link to="/" className="mt-6 block text-center text-xs text-white/40 hover:text-white/70">
           ← Volver
         </Link>
       </div>
+
+      <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
     </div>
   );
 }

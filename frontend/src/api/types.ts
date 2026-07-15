@@ -58,8 +58,13 @@ export interface DeliveryDto {
   receiverIdNumber: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** Coordenadas del punto de destino (conocidas desde la importación), para el mapa de rutas — distintas de latitude/longitude, que son la geolocalización capturada como evidencia al confirmar la entrega. */
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
   observation: string | null;
   deliveredAt: string | null;
+  invoiced: boolean;
+  invoicedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -99,6 +104,10 @@ export interface PublicDeliveryDto {
   deliveredAt: string | null;
   signatureUrl: string | null;
   photoUrl: string | null;
+  receiverName: string | null;
+  receiverIdNumber: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface PendingVerificationDto {
@@ -133,6 +142,39 @@ export interface DeliveryEvidenceInput {
   receiverIdNumber: string;
   latitude: number;
   longitude: number;
+}
+
+export interface CreateUserInput {
+  email: string;
+  name: string;
+  role: Role;
+  distributionCenterId: string | null;
+}
+
+export interface UpdateUserInput {
+  name?: string;
+  role?: Role;
+  distributionCenterId?: string | null;
+  active?: boolean;
+}
+
+export interface CreateDistributionCenterInput {
+  name: string;
+  city: string;
+  address: string;
+}
+
+export interface UpdateDistributionCenterInput {
+  name?: string;
+  city?: string;
+  address?: string;
+  active?: boolean;
+}
+
+export interface RequestOtpResultDto {
+  /** En el mock/demo el código se devuelve directo (no hay proveedor real de SMS/email). */
+  otpCode: string;
+  expiresAt: string;
 }
 
 export class ApiError extends Error {

@@ -106,6 +106,26 @@ Nuevo: cuando el pedido está "Entregado", el cliente ahora ve **la firma y la f
 **18. Error — guía no encontrada** — Público
 ![Error guía no encontrada](screenshots/16-portal-error-guia.png)
 
+### Nuevas pantallas de esta ronda (sin captura aún)
+
+**Portal Web (ADMIN)**
+- **Facturación** — `GET /api/deliveries`, `POST /api/deliveries/:id/export-invoice`. Lista las entregas ya confirmadas (`entregado_cliente`) pendientes de exportar y las ya exportadas.
+- **Mapa de rutas** — `GET /api/deliveries`. `react-leaflet` + OpenStreetMap, puntos coloreados por estado con la misma paleta del resto del sistema.
+- **Usuarios** — `GET/POST/PATCH /api/users`. Crear, editar y desactivar cuentas (ADMIN, CEDI, CONDUCTOR).
+- **CEDIs** (ahora editable) — `POST/PATCH /api/distribution-centers`. Crear, editar y desactivar centros de distribución.
+- **Reportes** — sobre `GET /api/deliveries` y `GET /api/routes` ya cargados, sin endpoint nuevo. Filtro por rango de fecha y CEDI, conteo por estado con barras simples.
+- **Configuración** — edición de CEDI (mismo formulario que Usuarios/CEDIs) + umbral de alertas guardado en `localStorage`.
+- **Mi perfil** — `POST /api/users/change-password`.
+
+**App Conductor**
+- **Escanear guía** — cámara vía `html5-qrcode`, coincide contra `trackingNumber` de las entregas de la ruta activa y navega directo al detalle.
+
+**Detalle de entrega (Portal Web) y detalle público (Portal Cliente)**
+- **Descargar acta de entrega** — PDF generado en el cliente (jsPDF), con guía, dirección, productos, datos del receptor, firma, foto y un código QR de la guía.
+
+**Login**
+- **¿Olvidaste tu contraseña?** — `POST /api/users/request-otp` + `POST /api/users/reset-password`. El código OTP se muestra en pantalla (no hay proveedor real de SMS/correo en este demo).
+
 ---
 
 ## 4. El mock ahora es compartido entre dispositivos
@@ -138,11 +158,14 @@ Se verificó con 3 navegadores simultáneos (Portal Web ADMIN + App CDI + App Co
 | Marcar entrega como no entregada (con observación) | ✅ Construido |
 | Portal cliente: cuenta con historial completo por NIT/teléfono | ✅ Construido |
 | Estados de error (login fallido, guía no encontrada, TXT mal formado) | ✅ Construido |
-| Escaneo de código de guía por cámara (del mockup) | ⛔ No construido — el conductor ya tiene la lista de guías de su ruta |
-| Mapa en vivo de rutas | ⛔ No construido — no hay librería de mapas integrada |
-| Descarga de acta de entrega en PDF / etiqueta QR | ⛔ No construido — no hay generación de documentos |
-| UI de facturación consolidada (`invoiceExport`) | ⛔ No construido — el endpoint existe en el backend real, falta la pantalla |
-| CRUD de usuarios/CEDIs desde el panel | ⛔ No construido — solo lectura en este prototipo |
+| UI de facturación consolidada (`invoiceExport`) | ✅ Construido — listado "Facturación" (ADMIN) con exportación por entrega |
+| Descarga de acta de entrega en PDF / etiqueta QR | ✅ Construido — PDF generado en el cliente (jsPDF) desde Portal Web y Portal Cliente, con QR de la guía embebido |
+| Mapa en vivo de rutas | ✅ Construido — `react-leaflet` + OpenStreetMap, puntos coloreados por estado (estático, sin GPS en tiempo real) |
+| Escaneo de código de guía por cámara (del mockup) | ✅ Construido — `html5-qrcode` en la App Conductor, navega directo a la entrega escaneada |
+| CRUD de usuarios/CEDIs desde el panel | ✅ Construido — crear/editar/desactivar usuarios y CEDIs (ADMIN) |
+| Cambio de contraseña / recuperación por OTP | ✅ Construido — "Mi perfil" (cambio) y "¿Olvidaste tu contraseña?" en login (el OTP se muestra en pantalla, sin proveedor real de SMS/correo) |
+| Reportes (resumen por estado, filtro de fecha y CEDI) | ✅ Construido — sobre los datos ya cargados, sin nuevo endpoint |
+| Configuración (datos de CEDI + umbral de alertas) | ✅ Construido — el umbral de alertas se guarda en `localStorage`, aún no conectado a ninguna alerta automática |
 | Correo de confirmación de carga exitosa (brief 3.1) | ⛔ Pendiente también en el backend real (sin helper de email) |
 | Notificación real por WhatsApp | ⛔ El backend real ya dispara el evento; falta conectar un proveedor |
 
@@ -150,11 +173,11 @@ Se verificó con 3 navegadores simultáneos (Portal Web ADMIN + App CDI + App Co
 
 ## 6. Próximos pasos
 
-1. **Backend real**: levantar MySQL 8.0 y las llaves RS256 para `trazabilidad-api` (el backend hexagonal completo, hoy sin desplegar). El `demo-server` actual es deliberadamente desechable — replicó el estado "Verificado/Alistado" y el selector de CEDI, pero esos mismos cambios deben portarse al backend real (entidad `Route`/`Delivery`, casos de uso) cuando se conecte de verdad.
+1. **Backend real**: levantar MySQL 8.0 y las llaves RS256 para `trazabilidad-api` (el backend hexagonal completo, hoy sin desplegar). El `demo-server` actual es deliberadamente desechable — replicó el estado "Verificado/Alistado", el selector de CEDI y todos los endpoints nuevos de esta ronda (facturación, CEDIs/usuarios, contraseña/OTP), pero esos mismos cambios deben portarse al backend real (entidades, casos de uso) cuando se conecte de verdad.
 2. **Frontend → backend real**: cambiar `VITE_API_BASE_URL` en Vercel de la URL de Render al backend real. Ningún componente cambia — el contrato ya es el mismo.
 3. **WhatsApp Business API**: conectar un proveedor real (Twilio, Meta Cloud API) en el helper `whatsappNotifier` del backend.
-4. **Email de confirmación de carga** (brief 3.1): pieza pendiente también en el backend real.
-5. **Completar lo marcado como pendiente** en la tabla de cobertura, priorizando según lo que gerencia quiera ver primero (probablemente facturación consolidada y mapa de rutas).
+4. **Email de confirmación de carga** (brief 3.1) y **proveedor real de OTP/SMS**: hoy el código de recuperación de contraseña se muestra en pantalla porque no hay proveedor de correo/SMS conectado — ambas piezas quedan pendientes en el backend real.
+5. **Umbral de alertas configurable**: hoy se guarda en `localStorage` desde la pantalla de Configuración, pero todavía no dispara ninguna alerta automática — falta conectarlo a una regla de negocio real cuando el backend lo soporte.
 
 ---
 

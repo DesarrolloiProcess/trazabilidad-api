@@ -10,6 +10,15 @@ export const TONE_STYLES: Record<SealTone, { bg: string; text: string }> = {
   controlled: { bg: 'bg-controlled', text: 'text-white' },
 };
 
+/** Mismos tonos que TONE_STYLES pero en hex crudo, para superficies que no leen Tailwind (canvas/SVG de Leaflet). */
+export const TONE_HEX: Record<SealTone, string> = {
+  neutral: '#CBD5E1',
+  cold: '#FF5C39',
+  thermal: '#B8863A',
+  dispensed: '#2F6F5E',
+  controlled: '#B23A2E',
+};
+
 export const DELIVERY_STATUS_LABEL: Record<DeliveryStatus, string> = {
   creado: 'Creado',
   alistado: 'Alistado',

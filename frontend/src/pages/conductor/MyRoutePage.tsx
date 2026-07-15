@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ConductorLayout } from '#src/layouts/ConductorLayout';
@@ -7,6 +8,7 @@ import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { EmptyState } from '#src/components/ui/EmptyState';
 import { Button } from '#src/components/ui/Button';
+import { QrScannerDialog } from '#src/components/conductor/QrScannerDialog';
 import { ApiError, type DeliveryDto } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
@@ -15,6 +17,8 @@ const TERMINAL_STATUSES = new Set(['entregado_cliente', 'no_entregado']);
 export function MyRoutePage() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   const routesQuery = useQuery({
     queryKey: ['routes', 'driver', user?.id],
@@ -37,6 +41,17 @@ export function MyRoutePage() {
   const pending = deliveries.length - done;
   const nextStop = deliveries.find((d) => !TERMINAL_STATUSES.has(d.status));
 
+  const handleScan = (code: string) => {
+    const match = deliveries.find((d) => d.trackingNumber.toUpperCase() === code.toUpperCase());
+    if (!match) {
+      setScanError(`No encontramos la guía "${code}" en tu ruta de hoy.`);
+      return;
+    }
+    setScannerOpen(false);
+    setScanError(null);
+    navigate(`/conductor/entregas/${match.id}`);
+  };
+
   return (
     <ConductorLayout title="Mi ruta de hoy" subtitle={activeRoute ? `${user?.name} · Ruta ${activeRoute.code}` : user?.name}>
       {routesQuery.isError && (
@@ -54,6 +69,19 @@ export function MyRoutePage() {
             <SummaryChip label="Entregados" value={done} tone="text-dispensed" />
             <SummaryChip label="Pendientes" value={pending} tone="text-thermal" />
           </div>
+
+          <Button
+            variant="secondary"
+            className="mb-4 w-full"
+            onClick={() => {
+              setScanError(null);
+              setScannerOpen(true);
+            }}
+          >
+            Escanear guía
+          </Button>
+
+          {scanError && <ErrorBanner message={scanError} />}
 
           {deliveriesQuery.isLoading ? (
             <SealLoader label="Cargando puntos de entrega…" />
@@ -82,6 +110,8 @@ export function MyRoutePage() {
       >
         Cerrar sesión
       </button>
+
+      <QrScannerDialog open={scannerOpen} onOpenChange={setScannerOpen} onScan={handleScan} />
     </ConductorLayout>
   );
 }

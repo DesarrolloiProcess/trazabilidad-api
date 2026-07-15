@@ -11,6 +11,12 @@ import { DeliveriesPage } from '#src/pages/panel/DeliveriesPage';
 import { DeliveryDetailPage } from '#src/pages/panel/DeliveryDetailPage';
 import { RoutesPage } from '#src/pages/panel/RoutesPage';
 import { DistributionCentersPage } from '#src/pages/panel/DistributionCentersPage';
+import { FacturacionPage } from '#src/pages/panel/FacturacionPage';
+import { MapaRutasPage } from '#src/pages/panel/MapaRutasPage';
+import { UsersPage } from '#src/pages/panel/UsersPage';
+import { ReportesPage } from '#src/pages/panel/ReportesPage';
+import { ConfiguracionPage } from '#src/pages/panel/ConfiguracionPage';
+import { MiPerfilPage } from '#src/pages/panel/MiPerfilPage';
 
 import { MyRoutePage } from '#src/pages/conductor/MyRoutePage';
 import { DeliveryCapturePage } from '#src/pages/conductor/DeliveryCapturePage';
@@ -67,6 +73,54 @@ export function App() {
             element={
               <RequireRole roles={['ADMIN']}>
                 <DistributionCentersPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/mapa"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <MapaRutasPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/facturacion"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <FacturacionPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/usuarios"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <UsersPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/reportes"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <ReportesPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/configuracion"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <ConfiguracionPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/perfil"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <MiPerfilPage />
               </RequireRole>
             }
           />

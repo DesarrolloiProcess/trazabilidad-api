@@ -6,3 +6,4 @@ dist
 *.log
 keys/*.pem
 *.tsbuildinfo
+docs/_prototipo-print.html

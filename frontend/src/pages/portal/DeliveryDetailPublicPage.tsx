@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PortalLayout } from '#src/layouts/PortalLayout';
 import { apiClient } from '#src/api/client';
 import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
+import { Button } from '#src/components/ui/Button';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 import { getPortalSession } from '#src/pages/portal/portalSession';
+import { generateActaPdf } from '#src/utils/generateActaPdf';
 
 const STATUS_EVIDENCE_COPY: Record<string, string> = {
   creado: 'Tu pedido fue recibido y está siendo preparado en el CEDI.',
@@ -23,6 +25,8 @@ export function DeliveryDetailPublicPage() {
   const { trackingNumber } = useParams<{ trackingNumber: string }>();
   const navigate = useNavigate();
   const session = getPortalSession();
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) navigate('/portal', { replace: true });
@@ -34,6 +38,31 @@ export function DeliveryDetailPublicPage() {
     enabled: Boolean(session && trackingNumber),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
+
+  const handleDownloadActa = async () => {
+    if (!query.data) return;
+    setPdfError(null);
+    setGeneratingPdf(true);
+    try {
+      await generateActaPdf({
+        trackingNumber: query.data.trackingNumber,
+        address: query.data.address,
+        recipientName: query.data.recipientName,
+        products: query.data.products,
+        receiverName: query.data.receiverName,
+        receiverIdNumber: query.data.receiverIdNumber,
+        deliveredAt: query.data.deliveredAt,
+        latitude: query.data.latitude,
+        longitude: query.data.longitude,
+        signatureUrl: query.data.signatureUrl,
+        photoUrl: query.data.photoUrl,
+      });
+    } catch {
+      setPdfError('No pudimos generar el acta de entrega. Intenta nuevamente.');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
 
   if (!session) return null;
 
@@ -81,6 +110,14 @@ export function DeliveryDetailPublicPage() {
               </div>
               {query.data.deliveredAt && (
                 <p className="mt-2 text-xs text-slate-400">{new Date(query.data.deliveredAt).toLocaleString('es-CO')}</p>
+              )}
+              {query.data.status === 'entregado_cliente' && (
+                <>
+                  <Button variant="secondary" size="md" className="mt-3 w-full" isLoading={generatingPdf} onClick={handleDownloadActa}>
+                    Descargar acta de entrega
+                  </Button>
+                  {pdfError && <p className="mt-1.5 text-xs font-medium text-controlled">{pdfError}</p>}
+                </>
               )}
             </div>
           </div>

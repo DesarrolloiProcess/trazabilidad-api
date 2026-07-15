@@ -251,6 +251,9 @@ interface DeliverySeed {
   products: DeliveryDto['products'];
   deliveredAt: string | null;
   observation?: string;
+  invoiced?: boolean;
+  /** Coordenadas del destino (simula geocodificación al importar) — separadas de la geo capturada como evidencia. */
+  destination: { lat: number; lng: number };
   evidence?: {
     signatureUrl: string;
     photoUrl: string;
@@ -272,6 +275,7 @@ const seeds: DeliverySeed[] = [
     products: [{ code: 'MED-3301', description: 'Suero fisiológico 500ml x12', quantity: 2, price: 48000 }],
     deliveredAt: iso(-1, 15, 10),
     observation: 'Punto cerrado, reprogramar entrega para mañana en la mañana.',
+    destination: { lat: 4.6903, lng: -74.0396 },
   },
   {
     id: 'del-00228',
@@ -282,6 +286,7 @@ const seeds: DeliverySeed[] = [
     status: 'alistado',
     products: [{ code: 'MED-1105', description: 'Ibuprofeno 400mg x30', quantity: 5, price: 12500 }],
     deliveredAt: null,
+    destination: { lat: 4.658, lng: -74.0559 },
   },
   {
     id: 'del-00229',
@@ -295,6 +300,7 @@ const seeds: DeliverySeed[] = [
       { code: 'MED-2215', description: 'Metformina 850mg x30', quantity: 2, price: 8600 },
     ],
     deliveredAt: iso(0, 8, 52),
+    destination: { lat: 4.6971, lng: -74.0426 },
     evidence: {
       signatureUrl: signaturePlaceholder('FARMA-00229'),
       photoUrl: photoPlaceholder('FARMA-00229'),
@@ -316,6 +322,7 @@ const seeds: DeliverySeed[] = [
       { code: 'MED-4415', description: 'Insulina glargina', quantity: 1, price: 92000 },
     ],
     deliveredAt: iso(0, 9, 12),
+    destination: { lat: 4.685, lng: -74.055 },
     evidence: {
       signatureUrl: signaturePlaceholder('FARMA-00230'),
       photoUrl: photoPlaceholder('FARMA-00230'),
@@ -337,6 +344,7 @@ const seeds: DeliverySeed[] = [
       { code: 'MED-1050', description: 'Losartán 50mg x30', quantity: 1, price: 9800 },
     ],
     deliveredAt: null,
+    destination: { lat: 4.695, lng: -74.045 },
   },
   {
     id: 'del-00232',
@@ -347,6 +355,7 @@ const seeds: DeliverySeed[] = [
     status: 'creado',
     products: [{ code: 'MED-5510', description: 'Acetaminofén 500mg x20', quantity: 10, price: 4200 }],
     deliveredAt: null,
+    destination: { lat: 4.635, lng: -74.11 },
   },
   {
     id: 'del-00201',
@@ -357,6 +366,8 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_cliente',
     products: [{ code: 'MED-6601', description: 'Salbutamol inhalador', quantity: 4, price: 21500 }],
     deliveredAt: iso(-1, 10, 5),
+    invoiced: true,
+    destination: { lat: 6.2088, lng: -75.5701 },
     evidence: {
       signatureUrl: signaturePlaceholder('FARMA-00201'),
       photoUrl: photoPlaceholder('FARMA-00201'),
@@ -375,6 +386,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_cliente',
     products: [{ code: 'MED-6602', description: 'Omeprazol 20mg x14', quantity: 6, price: 7300 }],
     deliveredAt: iso(-1, 11, 40),
+    destination: { lat: 6.244, lng: -75.573 },
     evidence: {
       signatureUrl: signaturePlaceholder('FARMA-00202'),
       photoUrl: photoPlaceholder('FARMA-00202'),
@@ -394,6 +406,7 @@ const seeds: DeliverySeed[] = [
     products: [{ code: 'MED-7701', description: 'Vacuna influenza (caja x10)', quantity: 1, price: 185000 }],
     deliveredAt: iso(-1, 13, 55),
     observation: 'No había persona autorizada para recibir producto de cadena de frío. Reprogramado.',
+    destination: { lat: 3.4372, lng: -76.5225 },
   },
   {
     id: 'del-00151',
@@ -404,6 +417,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_transportador',
     products: [{ code: 'MED-7702', description: 'Ibuprofeno 400mg x30', quantity: 8, price: 12500 }],
     deliveredAt: null,
+    destination: { lat: 3.465, lng: -76.53 },
   },
   {
     id: 'del-00233',
@@ -414,6 +428,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_transportador',
     products: [{ code: 'MED-8801', description: 'Loratadina 10mg x10', quantity: 12, price: 3900 }],
     deliveredAt: null,
+    destination: { lat: 4.628, lng: -74.145 },
   },
   {
     id: 'del-00234',
@@ -424,6 +439,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_cliente',
     products: [{ code: 'MED-1105', description: 'Ibuprofeno 400mg x30', quantity: 4, price: 12500 }],
     deliveredAt: iso(0, 8, 15),
+    destination: { lat: 4.658, lng: -74.0559 },
     evidence: {
       signatureUrl: signaturePlaceholder('FARMA-00234'),
       photoUrl: photoPlaceholder('FARMA-00234'),
@@ -442,6 +458,7 @@ const seeds: DeliverySeed[] = [
     status: 'creado',
     products: [{ code: 'MED-9001', description: 'Vacuna hepatitis B (caja x5)', quantity: 1, price: 95000 }],
     deliveredAt: null,
+    destination: { lat: 4.6903, lng: -74.0396 },
   },
   {
     id: 'del-00302',
@@ -452,6 +469,7 @@ const seeds: DeliverySeed[] = [
     status: 'creado',
     products: [{ code: 'MED-9002', description: 'Amoxicilina 500mg x21', quantity: 6, price: 15400 }],
     deliveredAt: null,
+    destination: { lat: 4.685, lng: -74.055 },
   },
 ];
 
@@ -471,8 +489,12 @@ export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
   receiverIdNumber: seed.evidence?.receiverIdNumber ?? null,
   latitude: seed.evidence?.latitude ?? null,
   longitude: seed.evidence?.longitude ?? null,
+  destinationLatitude: seed.destination.lat,
+  destinationLongitude: seed.destination.lng,
   observation: seed.observation ?? null,
   deliveredAt: seed.deliveredAt,
+  invoiced: seed.invoiced ?? false,
+  invoicedAt: seed.invoiced ? seed.deliveredAt : null,
   createdAt: iso(-1, 6),
   updatedAt: seed.deliveredAt ?? iso(-1, 6),
 }));

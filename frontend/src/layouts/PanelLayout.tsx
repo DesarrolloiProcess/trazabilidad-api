@@ -11,7 +11,13 @@ const NAV_ITEMS = [
   { to: '/panel', label: 'Panel', end: true },
   { to: '/panel/entregas', label: 'Entregas' },
   { to: '/panel/rutas', label: 'Rutas' },
+  { to: '/panel/mapa', label: 'Mapa' },
+  { to: '/panel/facturacion', label: 'Facturación' },
   { to: '/panel/cedis', label: 'CEDIs' },
+  { to: '/panel/usuarios', label: 'Usuarios' },
+  { to: '/panel/reportes', label: 'Reportes' },
+  { to: '/panel/configuracion', label: 'Configuración' },
+  { to: '/panel/perfil', label: 'Mi perfil' },
 ];
 
 export function PanelLayout({ children }: PanelLayoutProps) {
