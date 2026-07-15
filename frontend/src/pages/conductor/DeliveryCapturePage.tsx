@@ -12,6 +12,7 @@ import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/sta
 import { SignaturePad } from '#src/components/conductor/SignaturePad';
 import { GeoCapture } from '#src/components/conductor/GeoCapture';
 import { ApiError } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 export function DeliveryCapturePage() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +23,7 @@ export function DeliveryCapturePage() {
     queryKey: ['delivery', id],
     queryFn: () => apiClient.getDeliveryById(id!),
     enabled: Boolean(id),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -80,7 +82,14 @@ export function DeliveryCapturePage() {
   }
 
   const delivery = query.data;
-  const canReadyForForm = signatureUrl && photoUrl && receiverName.trim() && receiverIdNumber.trim() && coords;
+  const missingItems = [
+    !signatureUrl && 'firma',
+    !photoUrl && 'foto',
+    !receiverName.trim() && 'nombre de quien recibe',
+    !receiverIdNumber.trim() && 'cédula de quien recibe',
+    !coords && 'ubicación',
+  ].filter((item): item is string => Boolean(item));
+  const canReadyForForm = missingItems.length === 0;
 
   return (
     <ConductorLayout title={delivery.recipientName} subtitle={`${delivery.trackingNumber} · ${delivery.address}`}>
@@ -136,7 +145,10 @@ export function DeliveryCapturePage() {
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) setPhotoUrl(URL.createObjectURL(file));
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setPhotoUrl(reader.result as string);
+                  reader.readAsDataURL(file);
                 }}
               />
             </label>
@@ -177,6 +189,9 @@ export function DeliveryCapturePage() {
           >
             Confirmar entrega
           </Button>
+          {missingItems.length > 0 && (
+            <p className="text-center text-xs font-medium text-controlled">Falta: {missingItems.join(', ')}</p>
+          )}
           <button
             type="button"
             onClick={() => setShowNotDelivered(true)}
@@ -197,6 +212,9 @@ export function DeliveryCapturePage() {
             placeholder="Ej: punto cerrado, no había quien recibiera…"
             className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm"
           />
+          {!observation.trim() && (
+            <p className="mt-1 text-xs font-medium text-controlled">Escribe el motivo para poder confirmar.</p>
+          )}
           <div className="mt-3 flex gap-2">
             <Button variant="secondary" className="flex-1" onClick={() => setShowNotDelivered(false)}>
               Cancelar

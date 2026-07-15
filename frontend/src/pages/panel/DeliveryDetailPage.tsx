@@ -7,6 +7,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 export function DeliveryDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,7 @@ export function DeliveryDetailPage() {
     queryKey: ['delivery', id],
     queryFn: () => apiClient.getDeliveryById(id!),
     enabled: Boolean(id),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   return (
@@ -76,6 +78,26 @@ export function DeliveryDetailPage() {
                       </p>
                     </div>
                   </div>
+                  {(query.data.signatureUrl || query.data.photoUrl) && (
+                    <div className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                      {query.data.signatureUrl && (
+                        <div>
+                          <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">Firma</p>
+                          <img src={query.data.signatureUrl} alt="Firma del receptor" className="w-full rounded-lg border border-slate-200" />
+                        </div>
+                      )}
+                      {query.data.photoUrl && (
+                        <div>
+                          <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">Foto</p>
+                          <img
+                            src={query.data.photoUrl}
+                            alt="Foto de entrega"
+                            className="aspect-square w-full rounded-lg border border-slate-200 object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </section>
               )}
 
@@ -89,6 +111,15 @@ export function DeliveryDetailPage() {
                 Estado
               </p>
               <StatusSeal label={DELIVERY_STATUS_LABEL[query.data.status]} tone={DELIVERY_STATUS_TONE[query.data.status]} size="lg" />
+
+              {query.data.status === 'entregado_cliente' && query.data.deliveredAt && (
+                <div className="mt-3 rounded-lg border-l-4 border-dispensed bg-dispensed/5 px-3 py-2.5">
+                  <p className="text-sm font-semibold text-dispensed">✅ Habilitado para facturación</p>
+                  <p className="mt-0.5 text-xs text-navy/70">
+                    Desde {new Date(query.data.deliveredAt).toLocaleString('es-CO')}
+                  </p>
+                </div>
+              )}
 
               <dl className="mt-4 space-y-2.5 text-sm">
                 <div className="flex justify-between">

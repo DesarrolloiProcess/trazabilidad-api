@@ -8,6 +8,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 import { clearPortalSession, getPortalSession } from '#src/pages/portal/portalSession';
 
 export function MyDeliveriesPage() {
@@ -22,6 +23,7 @@ export function MyDeliveriesPage() {
     queryKey: ['portal', 'my-deliveries', session?.trackingNumber],
     queryFn: () => apiClient.listMyDeliveries(session!.trackingNumber, session!.verificationValue),
     enabled: Boolean(session),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   if (!session) return null;

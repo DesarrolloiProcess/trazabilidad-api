@@ -10,6 +10,7 @@ import { Button } from '#src/components/ui/Button';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError, type DeliveryStatus } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 import { TxtImportDialog } from '#src/pages/panel/TxtImportDialog';
 
 const STATUS_FILTERS: Array<{ value: DeliveryStatus | 'all'; label: string }> = [
@@ -29,6 +30,7 @@ export function DeliveriesPage() {
   const query = useQuery({
     queryKey: ['deliveries', 'panel-list'],
     queryFn: () => apiClient.listDeliveries({ page: 1, limit: 200 }),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const filtered = useMemo(() => {

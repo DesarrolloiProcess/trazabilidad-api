@@ -97,6 +97,13 @@ export interface PublicDeliveryDto {
   recipientName: string;
   products: PublicDeliveryProduct[];
   deliveredAt: string | null;
+  signatureUrl: string | null;
+  photoUrl: string | null;
+}
+
+export interface PendingVerificationDto {
+  route: RouteDto;
+  deliveries: DeliveryDto[];
 }
 
 export interface ClientSummaryDto {

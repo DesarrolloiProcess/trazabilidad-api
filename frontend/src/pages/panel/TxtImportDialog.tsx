@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '#src/api/client';
 import { ApiError } from '#src/api/types';
 import { Button } from '#src/components/ui/Button';
@@ -21,23 +21,34 @@ interface TxtImportDialogProps {
 
 export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
   const [content, setContent] = useState('');
+  const [distributionCenterId, setDistributionCenterId] = useState('');
   const queryClient = useQueryClient();
 
+  const centersQuery = useQuery({
+    queryKey: ['distribution-centers'],
+    queryFn: () => apiClient.listDistributionCenters(),
+    enabled: open,
+  });
+
   const mutation = useMutation({
-    mutationFn: (txt: string) => apiClient.importTxtPlanilla(txt),
+    mutationFn: (txt: string) => apiClient.importTxtPlanilla(txt, distributionCenterId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
       queryClient.invalidateQueries({ queryKey: ['deliveries'] });
+      queryClient.invalidateQueries({ queryKey: ['cdi'] });
     },
   });
 
   const handleClose = (next: boolean) => {
     if (!next) {
       setContent('');
+      setDistributionCenterId('');
       mutation.reset();
     }
     onOpenChange(next);
   };
+
+  const canSubmit = content.trim().length > 0 && distributionCenterId.length > 0;
 
   return (
     <Dialog.Root open={open} onOpenChange={handleClose}>
@@ -49,7 +60,8 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
           </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-slate-500">
             Pega el contenido de la planilla plana. El formato de columnas lo define iProcess — cada línea es un producto,
-            agrupado por número de guía.
+            agrupado por número de guía. La planilla llega en estado "Creado" y queda pendiente de verificación por el CEDI
+            destino desde su app móvil.
           </Dialog.Description>
 
           {mutation.isSuccess ? (
@@ -57,7 +69,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
               <p className="font-display text-sm font-semibold uppercase tracking-wide text-dispensed">Planilla cargada</p>
               <p className="mt-1 text-sm text-navy/80">
                 Ruta <span className="font-mono font-semibold">{mutation.data.routeCode}</span> creada con{' '}
-                <strong>{mutation.data.deliveriesCount}</strong> entregas.
+                <strong>{mutation.data.deliveriesCount}</strong> entregas. Queda pendiente de verificación en el CEDI.
               </p>
               <Button size="md" className="mt-3" onClick={() => handleClose(false)}>
                 Listo
@@ -65,6 +77,28 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
             </div>
           ) : (
             <>
+              <div className="mt-4">
+                <label htmlFor="import-cedi" className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">
+                  CEDI destino
+                </label>
+                <select
+                  id="import-cedi"
+                  value={distributionCenterId}
+                  onChange={(e) => setDistributionCenterId(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-navy"
+                >
+                  <option value="">Selecciona el CEDI que recibe esta planilla…</option>
+                  {centersQuery.data?.map((cedi) => (
+                    <option key={cedi.id} value={cedi.id}>
+                      {cedi.name}
+                    </option>
+                  ))}
+                </select>
+                {!distributionCenterId && (
+                  <p className="mt-1 text-xs font-medium text-controlled">Selecciona un CEDI para poder importar.</p>
+                )}
+              </div>
+
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -99,7 +133,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
                 <Button variant="ghost" onClick={() => handleClose(false)}>
                   Cancelar
                 </Button>
-                <Button isLoading={mutation.isPending} disabled={!content.trim()} onClick={() => mutation.mutate(content)}>
+                <Button isLoading={mutation.isPending} disabled={!canSubmit} onClick={() => mutation.mutate(content)}>
                   Importar planilla
                 </Button>
               </div>

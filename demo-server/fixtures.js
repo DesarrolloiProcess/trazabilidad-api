@@ -1,31 +1,16 @@
-import type {
-  DeliveryDto,
-  DeliveryStatus,
-  DistributionCenterDto,
-  RouteDto,
-  RouteStatus,
-  UserDto,
-} from '#src/api/types';
+import { randomUUID } from 'node:crypto';
 
-interface MockClient {
-  id: string;
-  nit: string;
-  name: string;
-  phone: string;
-}
-
-function hashSeed(seed: string): number {
+function hashSeed(seed) {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
   return h;
 }
 
-function svgToDataUri(svg: string): string {
+function svgToDataUri(svg) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-/** Firma placeholder: un trazo tipo firma manuscrita, ligeramente distinto por seed. */
-export function signaturePlaceholder(seed: string): string {
+export function signaturePlaceholder(seed) {
   const h = hashSeed(seed);
   const amp = 12 + (h % 10);
   const y0 = 55 + (h % 8);
@@ -37,8 +22,7 @@ export function signaturePlaceholder(seed: string): string {
   return svgToDataUri(svg);
 }
 
-/** Foto placeholder: rectángulo de marca con el número de guía, en vez de una URL rota. */
-export function photoPlaceholder(trackingNumber: string): string {
+export function photoPlaceholder(trackingNumber) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
     <rect width="320" height="220" fill="#0F2A3D"/>
     <polygon points="160,60 210,85 210,135 160,160 110,135 110,85" fill="#16788A"/>
@@ -48,14 +32,14 @@ export function photoPlaceholder(trackingNumber: string): string {
   return svgToDataUri(svg);
 }
 
-const iso = (daysOffset: number, hours = 8, minutes = 0): string => {
+const iso = (daysOffset, hours = 8, minutes = 0) => {
   const d = new Date();
   d.setDate(d.getDate() + daysOffset);
   d.setHours(hours, minutes, 0, 0);
   return d.toISOString();
 };
 
-export const distributionCenters: DistributionCenterDto[] = [
+export const distributionCenters = [
   {
     id: 'cedi-bogota-norte',
     name: 'CEDI Bogotá Norte',
@@ -94,7 +78,7 @@ export const distributionCenters: DistributionCenterDto[] = [
   },
 ];
 
-export const users: UserDto[] = [
+export const users = [
   {
     id: 'user-admin-1',
     email: 'admin@iprocess.co',
@@ -167,7 +151,7 @@ export const users: UserDto[] = [
   },
 ];
 
-export const clients: MockClient[] = [
+export const clients = [
   { id: 'client-1', nit: '900123456', name: 'Farmacia San Rafael', phone: '3011234567' },
   { id: 'client-2', nit: '900234567', name: 'Droguería El Roble', phone: '3022345678' },
   { id: 'client-3', nit: '900345678', name: 'Punto Salud Norte', phone: '3033456789' },
@@ -178,7 +162,7 @@ export const clients: MockClient[] = [
   { id: 'client-8', nit: '900890123', name: 'Farmacia Comunitaria Kennedy', phone: '3088901234' },
 ];
 
-export const routes: RouteDto[] = [
+export const routes = [
   {
     id: 'route-r014',
     code: 'R-014',
@@ -241,27 +225,7 @@ export const routes: RouteDto[] = [
   },
 ];
 
-interface DeliverySeed {
-  id: string;
-  routeId: string;
-  clientId: string;
-  trackingNumber: string;
-  address: string;
-  status: DeliveryStatus;
-  products: DeliveryDto['products'];
-  deliveredAt: string | null;
-  observation?: string;
-  evidence?: {
-    signatureUrl: string;
-    photoUrl: string;
-    receiverName: string;
-    receiverIdNumber: string;
-    latitude: number;
-    longitude: number;
-  };
-}
-
-const seeds: DeliverySeed[] = [
+const seeds = [
   {
     id: 'del-00227',
     routeId: 'route-r014',
@@ -295,14 +259,7 @@ const seeds: DeliverySeed[] = [
       { code: 'MED-2215', description: 'Metformina 850mg x30', quantity: 2, price: 8600 },
     ],
     deliveredAt: iso(0, 8, 52),
-    evidence: {
-      signatureUrl: signaturePlaceholder('FARMA-00229'),
-      photoUrl: photoPlaceholder('FARMA-00229'),
-      receiverName: 'Diana Torres',
-      receiverIdNumber: '52340981',
-      latitude: 4.6971,
-      longitude: -74.0426,
-    },
+    evidence: { receiverName: 'Diana Torres', receiverIdNumber: '52340981', latitude: 4.6971, longitude: -74.0426 },
   },
   {
     id: 'del-00230',
@@ -316,14 +273,7 @@ const seeds: DeliverySeed[] = [
       { code: 'MED-4415', description: 'Insulina glargina', quantity: 1, price: 92000 },
     ],
     deliveredAt: iso(0, 9, 12),
-    evidence: {
-      signatureUrl: signaturePlaceholder('FARMA-00230'),
-      photoUrl: photoPlaceholder('FARMA-00230'),
-      receiverName: 'Julián Peña',
-      receiverIdNumber: '80456123',
-      latitude: 4.685,
-      longitude: -74.055,
-    },
+    evidence: { receiverName: 'Julián Peña', receiverIdNumber: '80456123', latitude: 4.685, longitude: -74.055 },
   },
   {
     id: 'del-00231',
@@ -357,14 +307,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_cliente',
     products: [{ code: 'MED-6601', description: 'Salbutamol inhalador', quantity: 4, price: 21500 }],
     deliveredAt: iso(-1, 10, 5),
-    evidence: {
-      signatureUrl: signaturePlaceholder('FARMA-00201'),
-      photoUrl: photoPlaceholder('FARMA-00201'),
-      receiverName: 'Camilo Zea',
-      receiverIdNumber: '1128459023',
-      latitude: 6.2088,
-      longitude: -75.5701,
-    },
+    evidence: { receiverName: 'Camilo Zea', receiverIdNumber: '1128459023', latitude: 6.2088, longitude: -75.5701 },
   },
   {
     id: 'del-00202',
@@ -375,14 +318,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_cliente',
     products: [{ code: 'MED-6602', description: 'Omeprazol 20mg x14', quantity: 6, price: 7300 }],
     deliveredAt: iso(-1, 11, 40),
-    evidence: {
-      signatureUrl: signaturePlaceholder('FARMA-00202'),
-      photoUrl: photoPlaceholder('FARMA-00202'),
-      receiverName: 'Sara Gómez',
-      receiverIdNumber: '43876521',
-      latitude: 6.244,
-      longitude: -75.573,
-    },
+    evidence: { receiverName: 'Sara Gómez', receiverIdNumber: '43876521', latitude: 6.244, longitude: -75.573 },
   },
   {
     id: 'del-00150',
@@ -424,14 +360,7 @@ const seeds: DeliverySeed[] = [
     status: 'entregado_cliente',
     products: [{ code: 'MED-1105', description: 'Ibuprofeno 400mg x30', quantity: 4, price: 12500 }],
     deliveredAt: iso(0, 8, 15),
-    evidence: {
-      signatureUrl: signaturePlaceholder('FARMA-00234'),
-      photoUrl: photoPlaceholder('FARMA-00234'),
-      receiverName: 'Farmacia Central - Recepción',
-      receiverIdNumber: '79045612',
-      latitude: 4.658,
-      longitude: -74.093,
-    },
+    evidence: { receiverName: 'Farmacia Central - Recepción', receiverIdNumber: '79045612', latitude: 4.658, longitude: -74.093 },
   },
   {
     id: 'del-00301',
@@ -455,18 +384,24 @@ const seeds: DeliverySeed[] = [
   },
 ];
 
-export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
+export function findClientById(clientId) {
+  const client = clients.find((c) => c.id === clientId);
+  if (!client) throw new Error(`Cliente mock no encontrado: ${clientId}`);
+  return client;
+}
+
+export const deliveries = seeds.map((seed) => ({
   id: seed.id,
   routeId: seed.routeId,
   clientId: seed.clientId,
   trackingNumber: seed.trackingNumber,
   address: seed.address,
-  recipientName: clients.find((c) => c.id === seed.clientId)!.name,
-  recipientPhone: clients.find((c) => c.id === seed.clientId)!.phone,
+  recipientName: findClientById(seed.clientId).name,
+  recipientPhone: findClientById(seed.clientId).phone,
   products: seed.products,
   status: seed.status,
-  signatureUrl: seed.evidence?.signatureUrl ?? null,
-  photoUrl: seed.evidence?.photoUrl ?? null,
+  signatureUrl: seed.evidence ? signaturePlaceholder(seed.trackingNumber) : null,
+  photoUrl: seed.evidence ? photoPlaceholder(seed.trackingNumber) : null,
   receiverName: seed.evidence?.receiverName ?? null,
   receiverIdNumber: seed.evidence?.receiverIdNumber ?? null,
   latitude: seed.evidence?.latitude ?? null,
@@ -477,10 +412,6 @@ export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
   updatedAt: seed.deliveredAt ?? iso(-1, 6),
 }));
 
-export function findClientById(clientId: string): MockClient {
-  const client = clients.find((c) => c.id === clientId);
-  if (!client) throw new Error(`Cliente mock no encontrado: ${clientId}`);
-  return client;
+export function newId(prefix) {
+  return `${prefix}-${randomUUID()}`;
 }
-
-export const routeStatusValues: RouteStatus[] = ['creada', 'entregada_transportador', 'en_curso', 'completada', 'con_novedad'];

@@ -39,15 +39,16 @@ function toQuery(params: object): string {
 }
 
 /**
- * Implementación real, contra el backend Express/Drizzle. Hoy no está en uso
- * (ver src/api/client.ts) porque la base de datos aún no está conectada;
- * queda lista para el día en que solo haya que cambiar esa selección.
+ * Implementación real, hoy contra el demo-server (Express + memoria, ver /demo-server)
+ * desplegado para que el mock se comparta entre dispositivos. El día que la base de
+ * datos MySQL del backend hexagonal esté conectada, solo cambia VITE_API_BASE_URL —
+ * los contratos ya son los mismos que expone ese backend real.
  */
 export const httpApiClient: ApiClient = {
   login: (email, password) => request('/api/users/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
-  importTxtPlanilla: (content) =>
-    request('/api/txt-import', { method: 'POST', body: JSON.stringify({ content }) }),
+  importTxtPlanilla: (content, distributionCenterId) =>
+    request('/api/txt-import', { method: 'POST', body: JSON.stringify({ content, distributionCenterId }) }),
 
   listRoutes: (params: ListRoutesParams) => request(`/api/routes${toQuery(params)}`),
   getRouteById: (id) => request(`/api/routes/${id}`),
@@ -55,6 +56,10 @@ export const httpApiClient: ApiClient = {
     request(`/api/routes/${routeId}/assign-driver`, { method: 'PATCH', body: JSON.stringify({ driverId }) }),
   updateRouteStatus: (routeId, status) =>
     request(`/api/routes/${routeId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+
+  listPendingVerification: (distributionCenterId) =>
+    request(`/api/cdi/pending-verification${toQuery({ distributionCenterId })}`),
+  verifyRoute: (routeId) => request(`/api/cdi/routes/${routeId}/verify`, { method: 'POST' }),
 
   listDeliveries: (params: ListDeliveriesParams) => request(`/api/deliveries${toQuery(params)}`),
   getDeliveryById: (id) => request(`/api/deliveries/${id}`),

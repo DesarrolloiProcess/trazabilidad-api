@@ -8,6 +8,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 import { getPortalSession } from '#src/pages/portal/portalSession';
 
 const STATUS_EVIDENCE_COPY: Record<string, string> = {
@@ -31,6 +32,7 @@ export function DeliveryDetailPublicPage() {
     queryKey: ['portal', 'delivery', trackingNumber],
     queryFn: () => apiClient.trackDelivery(trackingNumber!, session!.verificationValue),
     enabled: Boolean(session && trackingNumber),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   if (!session) return null;
@@ -82,6 +84,36 @@ export function DeliveryDetailPublicPage() {
               )}
             </div>
           </div>
+
+          {query.data.status === 'entregado_cliente' && (query.data.signatureUrl || query.data.photoUrl) && (
+            <div className="mt-5 border-t border-slate-100 pt-5">
+              <p className="mb-3 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Evidencia de entrega
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {query.data.signatureUrl && (
+                  <div>
+                    <p className="mb-1.5 text-[11px] uppercase tracking-wide text-slate-400">Firma del receptor</p>
+                    <img
+                      src={query.data.signatureUrl}
+                      alt="Firma del receptor"
+                      className="w-full rounded-lg border border-slate-200 bg-white"
+                    />
+                  </div>
+                )}
+                {query.data.photoUrl && (
+                  <div>
+                    <p className="mb-1.5 text-[11px] uppercase tracking-wide text-slate-400">Foto de entrega</p>
+                    <img
+                      src={query.data.photoUrl}
+                      alt="Foto de entrega"
+                      className="aspect-square w-full rounded-lg border border-slate-200 object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       ) : null}
     </PortalLayout>

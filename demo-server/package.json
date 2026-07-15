@@ -1,0 +1,20 @@
+{
+  "name": "farmatrack-demo-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Backend minimo en memoria para la demo de FarmaTrack (sin base de datos). Los contratos replican al backend hexagonal real en src/.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

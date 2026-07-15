@@ -8,6 +8,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { EmptyState } from '#src/components/ui/EmptyState';
 import { Button } from '#src/components/ui/Button';
 import { ApiError, type DeliveryDto } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 const TERMINAL_STATUSES = new Set(['entregado_cliente', 'no_entregado']);
 
@@ -19,6 +20,7 @@ export function MyRoutePage() {
     queryKey: ['routes', 'driver', user?.id],
     queryFn: () => apiClient.listRoutes({ driverId: user!.id, page: 1, limit: 5 }),
     enabled: Boolean(user),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const activeRoute = routesQuery.data?.data[0];
@@ -27,6 +29,7 @@ export function MyRoutePage() {
     queryKey: ['deliveries', 'route', activeRoute?.id],
     queryFn: () => apiClient.listDeliveries({ routeId: activeRoute!.id, page: 1, limit: 100 }),
     enabled: Boolean(activeRoute),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const deliveries = deliveriesQuery.data?.data ?? [];

@@ -1,11 +1,11 @@
 import { Navigate, Link } from 'react-router-dom';
 import { useAuthStore } from '#src/store/authStore';
+import { roleHome } from '#src/routes/roleHome';
 
 export function LandingPage() {
   const { user } = useAuthStore();
 
-  if (user?.role === 'CONDUCTOR') return <Navigate to="/conductor" replace />;
-  if (user?.role === 'ADMIN' || user?.role === 'CEDI') return <Navigate to="/panel" replace />;
+  if (user) return <Navigate to={roleHome(user.role)} replace />;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-10 bg-navy px-6 text-white">

@@ -9,6 +9,7 @@ import { TextField } from '#src/components/ui/TextField';
 import { Button } from '#src/components/ui/Button';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { loginSchema, type LoginFormValues } from '#src/pages/auth/loginSchema';
+import { roleHome } from '#src/routes/roleHome';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -26,13 +27,7 @@ export function LoginPage() {
     onSuccess: (result) => {
       login(result.token, result.user);
       const from = (location.state as { from?: Location })?.from?.pathname;
-      if (from) {
-        navigate(from, { replace: true });
-      } else if (result.user.role === 'CONDUCTOR') {
-        navigate('/conductor', { replace: true });
-      } else {
-        navigate('/panel', { replace: true });
-      }
+      navigate(from ?? roleHome(result.user.role), { replace: true });
     },
   });
 

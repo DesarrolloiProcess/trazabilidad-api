@@ -7,6 +7,7 @@ import type {
   LoginResultDto,
   MyDeliveriesDto,
   PagedResult,
+  PendingVerificationDto,
   PublicDeliveryDto,
   RouteDto,
   RouteStatus,
@@ -34,12 +35,17 @@ export interface ListRoutesParams {
 export interface ApiClient {
   login(email: string, password: string): Promise<LoginResultDto>;
 
-  importTxtPlanilla(content: string): Promise<ImportResultDto>;
+  importTxtPlanilla(content: string, distributionCenterId?: string): Promise<ImportResultDto>;
 
   listRoutes(params: ListRoutesParams): Promise<PagedResult<RouteDto>>;
   getRouteById(id: string): Promise<RouteDto>;
   assignDriver(routeId: string, driverId: string): Promise<RouteDto>;
   updateRouteStatus(routeId: string, status: RouteStatus): Promise<RouteDto>;
+
+  /** Rutas de un CEDI con al menos una entrega en estado 'creado' pendiente por verificar (perfil CDI móvil). */
+  listPendingVerification(distributionCenterId: string): Promise<PendingVerificationDto[]>;
+  /** Verifica la planilla completa: avanza todas sus entregas 'creado' a 'alistado'. */
+  verifyRoute(routeId: string): Promise<DeliveryDto[]>;
 
   listDeliveries(params: ListDeliveriesParams): Promise<PagedResult<DeliveryDto>>;
   getDeliveryById(id: string): Promise<DeliveryDto>;

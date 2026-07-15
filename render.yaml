@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: farmatrack-demo-server
+    runtime: node
+    rootDir: demo-server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true

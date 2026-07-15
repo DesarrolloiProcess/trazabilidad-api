@@ -9,6 +9,7 @@ import type {
   LoginResultDto,
   MyDeliveriesDto,
   PagedResult,
+  PendingVerificationDto,
   PublicDeliveryDto,
   RouteDto,
   RouteStatus,
@@ -53,6 +54,7 @@ function findClientForDelivery(delivery: DeliveryDto) {
 }
 
 function toPublicDeliveryDto(delivery: DeliveryDto): PublicDeliveryDto {
+  const isDelivered = delivery.status === 'entregado_cliente';
   return {
     trackingNumber: delivery.trackingNumber,
     status: delivery.status,
@@ -60,6 +62,8 @@ function toPublicDeliveryDto(delivery: DeliveryDto): PublicDeliveryDto {
     recipientName: delivery.recipientName,
     products: delivery.products.map(({ code, description, quantity }) => ({ code, description, quantity })),
     deliveredAt: delivery.deliveredAt,
+    signatureUrl: isDelivered ? delivery.signatureUrl : null,
+    photoUrl: isDelivered ? delivery.photoUrl : null,
   };
 }
 
@@ -157,12 +161,20 @@ export const mockApiClient: ApiClient = {
     return result;
   },
 
-  async importTxtPlanilla(content) {
+  async importTxtPlanilla(content, distributionCenterId) {
     await delay(700, 1400);
     const currentUser = requireCurrentUser();
 
-    if (!currentUser.distributionCenterId) {
-      throw new ApiError('El usuario que importa la planilla debe pertenecer a un CEDI', 'BUSINESS_LOGIC_ERROR', 422);
+    const resolvedDistributionCenterId = distributionCenterId ?? currentUser.distributionCenterId;
+
+    if (!resolvedDistributionCenterId) {
+      throw new ApiError(
+        currentUser.role === 'ADMIN'
+          ? 'Selecciona el CEDI destino de esta planilla'
+          : 'El usuario que importa la planilla debe pertenecer a un CEDI',
+        'BUSINESS_LOGIC_ERROR',
+        422,
+      );
     }
 
     const rows = parsePlanilla(content);
@@ -172,7 +184,7 @@ export const mockApiClient: ApiClient = {
     const route: RouteDto = {
       id: `route-${crypto.randomUUID()}`,
       code: firstRow.routeCode,
-      distributionCenterId: currentUser.distributionCenterId,
+      distributionCenterId: resolvedDistributionCenterId,
       driverId: null,
       date: new Date(firstRow.fecha || Date.now()).toISOString(),
       status: 'creada',
@@ -298,6 +310,41 @@ export const mockApiClient: ApiClient = {
     route.status = status;
     route.updatedAt = new Date().toISOString();
     return route;
+  },
+
+  async listPendingVerification(distributionCenterId) {
+    await delay();
+
+    const pendingRoutes = routesStore.filter((r) => r.distributionCenterId === distributionCenterId);
+
+    const result: PendingVerificationDto[] = pendingRoutes
+      .map((route) => ({
+        route,
+        deliveries: deliveriesStore.filter((d) => d.routeId === route.id && d.status === 'creado'),
+      }))
+      .filter((entry) => entry.deliveries.length > 0)
+      .sort((a, b) => a.route.date.localeCompare(b.route.date));
+
+    return result;
+  },
+
+  async verifyRoute(routeId) {
+    await delay(500, 1000);
+    const route = routesStore.find((r) => r.id === routeId);
+    if (!route) throw new ApiError(`Ruta no encontrada: ${routeId}`, 'ENTITY_NOT_FOUND', 404);
+
+    const pending = deliveriesStore.filter((d) => d.routeId === routeId && d.status === 'creado');
+    if (pending.length === 0) {
+      throw new ApiError('Esta planilla no tiene entregas pendientes por verificar', 'BUSINESS_LOGIC_ERROR', 422);
+    }
+
+    const now = new Date().toISOString();
+    for (const delivery of pending) {
+      delivery.status = 'alistado';
+      delivery.updatedAt = now;
+    }
+
+    return pending;
   },
 
   async listDeliveries(params: ListDeliveriesParams) {

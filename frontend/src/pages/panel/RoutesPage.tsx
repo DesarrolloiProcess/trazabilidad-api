@@ -6,6 +6,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { ROUTE_STATUS_LABEL, ROUTE_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError, type RouteDto, type RouteStatus } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 const ROUTE_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
   creada: ['entregada_transportador'],
@@ -21,6 +22,7 @@ export function RoutesPage() {
   const routesQuery = useQuery({
     queryKey: ['routes', 'panel-list'],
     queryFn: () => apiClient.listRoutes({ page: 1, limit: 100 }),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const driversQuery = useQuery({

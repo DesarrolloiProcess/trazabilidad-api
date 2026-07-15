@@ -15,6 +15,9 @@ import { DistributionCentersPage } from '#src/pages/panel/DistributionCentersPag
 import { MyRoutePage } from '#src/pages/conductor/MyRoutePage';
 import { DeliveryCapturePage } from '#src/pages/conductor/DeliveryCapturePage';
 
+import { CdiVerificationListPage } from '#src/pages/cdi/CdiVerificationListPage';
+import { RouteVerificationPage } from '#src/pages/cdi/RouteVerificationPage';
+
 import { PortalLoginPage } from '#src/pages/portal/PortalLoginPage';
 import { MyDeliveriesPage } from '#src/pages/portal/MyDeliveriesPage';
 import { DeliveryDetailPublicPage } from '#src/pages/portal/DeliveryDetailPublicPage';
@@ -30,7 +33,7 @@ export function App() {
           <Route
             path="/panel"
             element={
-              <RequireRole roles={['ADMIN', 'CEDI']}>
+              <RequireRole roles={['ADMIN']}>
                 <DashboardPage />
               </RequireRole>
             }
@@ -38,7 +41,7 @@ export function App() {
           <Route
             path="/panel/entregas"
             element={
-              <RequireRole roles={['ADMIN', 'CEDI']}>
+              <RequireRole roles={['ADMIN']}>
                 <DeliveriesPage />
               </RequireRole>
             }
@@ -46,7 +49,7 @@ export function App() {
           <Route
             path="/panel/entregas/:id"
             element={
-              <RequireRole roles={['ADMIN', 'CEDI']}>
+              <RequireRole roles={['ADMIN']}>
                 <DeliveryDetailPage />
               </RequireRole>
             }
@@ -54,7 +57,7 @@ export function App() {
           <Route
             path="/panel/rutas"
             element={
-              <RequireRole roles={['ADMIN', 'CEDI']}>
+              <RequireRole roles={['ADMIN']}>
                 <RoutesPage />
               </RequireRole>
             }
@@ -62,8 +65,25 @@ export function App() {
           <Route
             path="/panel/cedis"
             element={
-              <RequireRole roles={['ADMIN', 'CEDI']}>
+              <RequireRole roles={['ADMIN']}>
                 <DistributionCentersPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/cdi"
+            element={
+              <RequireRole roles={['CEDI']}>
+                <CdiVerificationListPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/cdi/rutas/:id"
+            element={
+              <RequireRole roles={['CEDI']}>
+                <RouteVerificationPage />
               </RequireRole>
             }
           />

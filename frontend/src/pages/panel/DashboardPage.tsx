@@ -7,6 +7,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { ROUTE_STATUS_LABEL, ROUTE_STATUS_TONE } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
+import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 function isToday(iso: string): boolean {
   const d = new Date(iso);
@@ -18,11 +19,13 @@ export function DashboardPage() {
   const deliveriesQuery = useQuery({
     queryKey: ['deliveries', 'dashboard'],
     queryFn: () => apiClient.listDeliveries({ page: 1, limit: 200 }),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const routesQuery = useQuery({
     queryKey: ['routes', 'dashboard'],
     queryFn: () => apiClient.listRoutes({ page: 1, limit: 50 }),
+    refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const centersQuery = useQuery({
