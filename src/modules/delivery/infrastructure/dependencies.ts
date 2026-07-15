@@ -1,5 +1,6 @@
 import { DrizzleDeliveryImpl } from '#src/modules/delivery/infrastructure/repositories/drizzleDelivery.impl.js';
 import { whatsappNotifierHandle } from '#src/shared/helpers/whatsappNotifier/infrastructure/dependencies.js';
+import { routeRepository } from '#src/modules/route/infrastructure/dependencies.js';
 
 import { GetDeliveryByIdUseCase } from '#src/modules/delivery/app/useCases/getDeliveryById/getDeliveryById.useCase.js';
 import { ListDeliveriesUseCase } from '#src/modules/delivery/app/useCases/listDeliveries/listDeliveries.useCase.js';
@@ -19,13 +20,13 @@ import { MarkDeliveryInvoicedCtrl } from '#src/modules/delivery/infrastructure/i
 
 export const deliveryRepository = new DrizzleDeliveryImpl();
 
-const getDeliveryByIdUseCase = new GetDeliveryByIdUseCase(deliveryRepository);
-const listDeliveriesUseCase = new ListDeliveriesUseCase(deliveryRepository);
+const getDeliveryByIdUseCase = new GetDeliveryByIdUseCase(deliveryRepository, routeRepository);
+const listDeliveriesUseCase = new ListDeliveriesUseCase(deliveryRepository, routeRepository);
 const advanceDeliveryStatusUseCase = new AdvanceDeliveryStatusUseCase(deliveryRepository, whatsappNotifierHandle);
 const deliveryEvidenceUseCase = new DeliveryEvidenceUseCase(deliveryRepository, whatsappNotifierHandle);
 const markNotDeliveredUseCase = new MarkNotDeliveredUseCase(deliveryRepository);
 const invoiceExportUseCase = new InvoiceExportUseCase(deliveryRepository);
-const markDeliveryInvoicedUseCase = new MarkDeliveryInvoicedUseCase(deliveryRepository);
+const markDeliveryInvoicedUseCase = new MarkDeliveryInvoicedUseCase(deliveryRepository, routeRepository);
 
 export const getDeliveryByIdCtrl = new GetDeliveryByIdCtrl(getDeliveryByIdUseCase);
 export const listDeliveriesCtrl = new ListDeliveriesCtrl(listDeliveriesUseCase);

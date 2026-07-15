@@ -2,23 +2,40 @@ import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAuthStore } from '#src/store/authStore';
+import type { Role } from '#src/api/types';
 
 interface PanelLayoutProps {
   children: ReactNode;
 }
 
-const NAV_ITEMS = [
-  { to: '/panel', label: 'Panel', end: true },
-  { to: '/panel/entregas', label: 'Entregas' },
-  { to: '/panel/rutas', label: 'Rutas' },
-  { to: '/panel/mapa', label: 'Mapa' },
-  { to: '/panel/facturacion', label: 'Facturación' },
-  { to: '/panel/cedis', label: 'CEDIs' },
-  { to: '/panel/usuarios', label: 'Usuarios' },
-  { to: '/panel/reportes', label: 'Reportes' },
-  { to: '/panel/configuracion', label: 'Configuración' },
-  { to: '/panel/perfil', label: 'Mi perfil' },
+interface NavItem {
+  to: string;
+  label: string;
+  end?: boolean;
+  roles: Role[];
+}
+
+/** ADMIN ve todo; CEDI y CONDUCTOR solo lo que la auditoría de permisos definió para su rol. */
+const NAV_ITEMS: NavItem[] = [
+  { to: '/panel', label: 'Panel', end: true, roles: ['ADMIN'] },
+  { to: '/panel/entregas', label: 'Entregas', roles: ['ADMIN', 'CEDI'] },
+  { to: '/panel/rutas', label: 'Rutas', roles: ['ADMIN', 'CEDI'] },
+  { to: '/panel/mapa', label: 'Mapa', roles: ['ADMIN', 'CEDI', 'CONDUCTOR'] },
+  { to: '/panel/facturacion', label: 'Facturación', roles: ['ADMIN', 'CEDI'] },
+  { to: '/panel/cedis', label: 'CEDIs', roles: ['ADMIN'] },
+  { to: '/panel/usuarios', label: 'Usuarios', roles: ['ADMIN'] },
+  { to: '/panel/reportes', label: 'Reportes', roles: ['ADMIN'] },
+  { to: '/panel/configuracion', label: 'Configuración', roles: ['ADMIN'] },
+  { to: '/cdi', label: 'Verificación CDI', roles: ['ADMIN', 'CEDI'] },
+  { to: '/conductor', label: 'App Conductor', roles: ['ADMIN', 'CONDUCTOR'] },
+  { to: '/panel/perfil', label: 'Mi perfil', roles: ['ADMIN', 'CEDI', 'CONDUCTOR'] },
 ];
+
+const ROLE_LABEL: Record<Role, string> = {
+  ADMIN: 'Administrador',
+  CEDI: 'CEDI',
+  CONDUCTOR: 'Conductor',
+};
 
 export function PanelLayout({ children }: PanelLayoutProps) {
   const { user, logout } = useAuthStore();
@@ -36,6 +53,8 @@ export function PanelLayout({ children }: PanelLayoutProps) {
     .join('')
     .toUpperCase();
 
+  const visibleItems = NAV_ITEMS.filter((item) => (user ? item.roles.includes(user.role) : false));
+
   return (
     <div className="flex min-h-screen bg-paper">
       <aside className="flex w-60 shrink-0 flex-col bg-navy-dark text-white">
@@ -50,7 +69,7 @@ export function PanelLayout({ children }: PanelLayoutProps) {
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {NAV_ITEMS.map((item) => (
+          {visibleItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -74,7 +93,7 @@ export function PanelLayout({ children }: PanelLayoutProps) {
             </span>
             <div className="min-w-0 leading-tight">
               <p className="truncate text-sm font-semibold">{user?.name}</p>
-              <p className="truncate text-[11px] text-white/40">{user?.role === 'ADMIN' ? 'Administrador' : 'CEDI'}</p>
+              <p className="truncate text-[11px] text-white/40">{user ? ROLE_LABEL[user.role] : ''}</p>
             </div>
           </div>
           <button

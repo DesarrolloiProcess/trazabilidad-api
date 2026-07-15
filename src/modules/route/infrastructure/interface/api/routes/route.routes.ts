@@ -26,9 +26,11 @@ router.get(
   getRouteByIdCtrl.run,
 );
 
+// Cambio manual de estado de ruta: exclusivo ADMIN como excepción/override — el flujo normal avanza
+// el estado solo mediante las acciones del propio proceso (verificar planilla, aceptar ruta, etc.).
 router.patch(
   '/:id/status',
-  checkAuth.run([Role.ADMIN, Role.CEDI, Role.CONDUCTOR]),
+  checkAuth.run([Role.ADMIN]),
   schemaValidation(updateRouteStatusSchema),
   updateRouteStatusCtrl.run,
 );

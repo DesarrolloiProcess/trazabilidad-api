@@ -1,5 +1,6 @@
 import { EntityNotFoundError } from '#src/shared/Errors/entityNotFoundError.js';
 import { BusinessLogicError } from '#src/shared/Errors/businessLogicError.js';
+import { ForbiddenError } from '#src/shared/Errors/forbiddenError.js';
 import { Role } from '#src/shared/constant/roles.constant.js';
 import type { Route } from '#src/modules/route/domain/route.entity.js';
 import type { IRouteRepository } from '#src/modules/route/domain/route.repository.js';
@@ -20,10 +21,19 @@ export class AssignDriverUseCase {
       throw new EntityNotFoundError('Ruta', command.id);
     }
 
+    // El CEDI solo puede asignar conductores dentro de su propia sede.
+    if (command.authUser.role === Role.CEDI && route.distributionCenterId !== command.authUser.distributionCenterId) {
+      throw new ForbiddenError('No puedes asignar conductores en rutas de otro CEDI');
+    }
+
     const driver = await this.userRepository.getById(command.driverId);
 
     if (!driver || driver.role !== Role.CONDUCTOR || !driver.active) {
       throw new BusinessLogicError('El conductor indicado no existe o no está activo');
+    }
+
+    if (command.authUser.role === Role.CEDI && driver.distributionCenterId !== command.authUser.distributionCenterId) {
+      throw new BusinessLogicError('El conductor debe pertenecer a tu mismo CEDI');
     }
 
     const updated = route.assignDriver(command.driverId, command.authUser.id);

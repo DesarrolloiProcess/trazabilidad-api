@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ConductorLayout } from '#src/layouts/ConductorLayout';
@@ -12,23 +13,57 @@ import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 export function CdiVerificationListPage() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const isAdmin = user?.role === 'ADMIN';
+  const [selectedCediId, setSelectedCediId] = useState('');
+
+  const centersQuery = useQuery({
+    queryKey: ['distribution-centers'],
+    queryFn: () => apiClient.listDistributionCenters(),
+    enabled: isAdmin,
+  });
+
+  // ADMIN no pertenece a un CEDI propio — necesita elegir cuál planilla revisar.
+  const distributionCenterId = isAdmin ? selectedCediId : user?.distributionCenterId;
 
   const query = useQuery({
-    queryKey: ['cdi', 'pending-verification', user?.distributionCenterId],
-    queryFn: () => apiClient.listPendingVerification(user!.distributionCenterId!),
-    enabled: Boolean(user?.distributionCenterId),
+    queryKey: ['cdi', 'pending-verification', distributionCenterId],
+    queryFn: () => apiClient.listPendingVerification(distributionCenterId!),
+    enabled: Boolean(distributionCenterId),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   return (
     <ConductorLayout title="Planillas por verificar" subtitle={user?.name} brandLabel="FarmaTrack CEDI">
+      {isAdmin && (
+        <div className="mb-4">
+          <label htmlFor="cedi-selector" className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">
+            CEDI a revisar
+          </label>
+          <select
+            id="cedi-selector"
+            value={selectedCediId}
+            onChange={(e) => setSelectedCediId(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-navy"
+          >
+            <option value="">Selecciona un CEDI…</option>
+            {centersQuery.data?.map((cedi) => (
+              <option key={cedi.id} value={cedi.id}>
+                {cedi.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {query.isError && (
         <ErrorBanner
           message={query.error instanceof ApiError ? query.error.message : 'No pudimos cargar las planillas pendientes.'}
         />
       )}
 
-      {query.isLoading ? (
+      {!distributionCenterId ? (
+        <EmptyState title="Selecciona un CEDI" description="Elige el CEDI cuyas planillas quieres revisar." />
+      ) : query.isLoading ? (
         <SealLoader label="Buscando planillas…" />
       ) : !query.data || query.data.length === 0 ? (
         <EmptyState

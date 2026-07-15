@@ -48,21 +48,21 @@ router.patch(
 
 router.post(
   '/:id/evidence',
-  checkAuth.run([Role.CONDUCTOR]),
+  checkAuth.run([Role.ADMIN, Role.CONDUCTOR]),
   schemaValidation(deliveryEvidenceSchema),
   deliveryEvidenceCtrl.run,
 );
 
 router.post(
   '/:id/not-delivered',
-  checkAuth.run([Role.CONDUCTOR]),
+  checkAuth.run([Role.ADMIN, Role.CONDUCTOR]),
   schemaValidation(markNotDeliveredSchema),
   markNotDeliveredCtrl.run,
 );
 
 router.post(
   '/:id/export-invoice',
-  checkAuth.run([Role.ADMIN]),
+  checkAuth.run([Role.ADMIN, Role.CEDI]),
   schemaValidation(markDeliveryInvoicedSchema),
   markDeliveryInvoicedCtrl.run,
 );

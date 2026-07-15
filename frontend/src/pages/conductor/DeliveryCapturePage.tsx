@@ -13,6 +13,7 @@ import { SignaturePad } from '#src/components/conductor/SignaturePad';
 import { GeoCapture } from '#src/components/conductor/GeoCapture';
 import { ApiError } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
+import { generateActaPdf } from '#src/utils/generateActaPdf';
 
 export function DeliveryCapturePage() {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +34,8 @@ export function DeliveryCapturePage() {
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [observation, setObservation] = useState('');
   const [showNotDelivered, setShowNotDelivered] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['delivery', id] });
@@ -61,6 +64,31 @@ export function DeliveryCapturePage() {
     mutationFn: () => apiClient.markNotDelivered(id!, observation),
     onSuccess: invalidate,
   });
+
+  const handleDownloadActa = async () => {
+    if (!query.data) return;
+    setPdfError(null);
+    setGeneratingPdf(true);
+    try {
+      await generateActaPdf({
+        trackingNumber: query.data.trackingNumber,
+        address: query.data.address,
+        recipientName: query.data.recipientName,
+        products: query.data.products,
+        receiverName: query.data.receiverName,
+        receiverIdNumber: query.data.receiverIdNumber,
+        deliveredAt: query.data.deliveredAt,
+        latitude: query.data.latitude,
+        longitude: query.data.longitude,
+        signatureUrl: query.data.signatureUrl,
+        photoUrl: query.data.photoUrl,
+      });
+    } catch {
+      setPdfError('No pudimos generar el acta de entrega. Intenta nuevamente.');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
 
   if (query.isLoading) {
     return (
@@ -242,7 +270,11 @@ export function DeliveryCapturePage() {
           <div className="mt-3 rounded-lg border-l-4 border-dispensed bg-dispensed/5 px-3 py-2 text-left text-xs text-navy/80">
             El acta de entrega quedó lista para facturación. Notificación automática enviada por WhatsApp al destinatario.
           </div>
-          <Button className="mt-4 w-full" onClick={() => navigate('/conductor')}>
+          <Button variant="secondary" className="mt-4 w-full" isLoading={generatingPdf} onClick={handleDownloadActa}>
+            Descargar acta de entrega
+          </Button>
+          {pdfError && <p className="mt-1.5 text-xs font-medium text-controlled">{pdfError}</p>}
+          <Button className="mt-3 w-full" onClick={() => navigate('/conductor')}>
             Volver a mi ruta
           </Button>
         </div>

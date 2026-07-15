@@ -5,6 +5,7 @@ import { apiClient } from '#src/api/client';
 import { ApiError } from '#src/api/types';
 import { Button } from '#src/components/ui/Button';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
+import { useAuthStore } from '#src/store/authStore';
 
 const VALID_SAMPLE = `fecha|routeCode|trackingNumber|clienteNit|direccion|destinatarioNombre|destinatarioTelefono|productoCodigo|productoDescripcion|productoCantidad|productoPrecio
 2026-07-10|R-020|FARMA-00300|900123456|Cra 45 #103-22, Bogotá|Farmacia San Rafael|3011234567|MED-1042|Amoxicilina 500mg x21|3|15400
@@ -20,6 +21,9 @@ interface TxtImportDialogProps {
 }
 
 export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
+  const user = useAuthStore((s) => s.user);
+  const needsCediSelector = user?.role !== 'CEDI';
+
   const [content, setContent] = useState('');
   const [distributionCenterId, setDistributionCenterId] = useState('');
   const queryClient = useQueryClient();
@@ -27,11 +31,11 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
   const centersQuery = useQuery({
     queryKey: ['distribution-centers'],
     queryFn: () => apiClient.listDistributionCenters(),
-    enabled: open,
+    enabled: open && needsCediSelector,
   });
 
   const mutation = useMutation({
-    mutationFn: (txt: string) => apiClient.importTxtPlanilla(txt, distributionCenterId),
+    mutationFn: (txt: string) => apiClient.importTxtPlanilla(txt, needsCediSelector ? distributionCenterId : undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
       queryClient.invalidateQueries({ queryKey: ['deliveries'] });
@@ -48,7 +52,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
     onOpenChange(next);
   };
 
-  const canSubmit = content.trim().length > 0 && distributionCenterId.length > 0;
+  const canSubmit = content.trim().length > 0 && (!needsCediSelector || distributionCenterId.length > 0);
 
   return (
     <Dialog.Root open={open} onOpenChange={handleClose}>
@@ -77,27 +81,29 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
             </div>
           ) : (
             <>
-              <div className="mt-4">
-                <label htmlFor="import-cedi" className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">
-                  CEDI destino
-                </label>
-                <select
-                  id="import-cedi"
-                  value={distributionCenterId}
-                  onChange={(e) => setDistributionCenterId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-navy"
-                >
-                  <option value="">Selecciona el CEDI que recibe esta planilla…</option>
-                  {centersQuery.data?.map((cedi) => (
-                    <option key={cedi.id} value={cedi.id}>
-                      {cedi.name}
-                    </option>
-                  ))}
-                </select>
-                {!distributionCenterId && (
-                  <p className="mt-1 text-xs font-medium text-controlled">Selecciona un CEDI para poder importar.</p>
-                )}
-              </div>
+              {needsCediSelector && (
+                <div className="mt-4">
+                  <label htmlFor="import-cedi" className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">
+                    CEDI destino
+                  </label>
+                  <select
+                    id="import-cedi"
+                    value={distributionCenterId}
+                    onChange={(e) => setDistributionCenterId(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-navy"
+                  >
+                    <option value="">Selecciona el CEDI que recibe esta planilla…</option>
+                    {centersQuery.data?.map((cedi) => (
+                      <option key={cedi.id} value={cedi.id}>
+                        {cedi.name}
+                      </option>
+                    ))}
+                  </select>
+                  {!distributionCenterId && (
+                    <p className="mt-1 text-xs font-medium text-controlled">Selecciona un CEDI para poder importar.</p>
+                  )}
+                </div>
+              )}
 
               <textarea
                 value={content}

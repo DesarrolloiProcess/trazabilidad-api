@@ -5,6 +5,8 @@ export interface IDeliveryQuery {
   page: number;
   limit: number;
   routeId?: string;
+  /** Filtra por el CEDI dueño de la ruta de la entrega (join con routes) — usado para restringir al rol CEDI a su propia sede. */
+  distributionCenterId?: string;
 }
 
 export interface IDeliveryRepository {

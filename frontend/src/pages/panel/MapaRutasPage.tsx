@@ -4,8 +4,10 @@ import 'leaflet/dist/leaflet.css';
 import { Link } from 'react-router-dom';
 import { PanelLayout } from '#src/layouts/PanelLayout';
 import { apiClient } from '#src/api/client';
+import { useAuthStore } from '#src/store/authStore';
 import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
+import { EmptyState } from '#src/components/ui/EmptyState';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE, TONE_HEX } from '#src/components/status/statusConfig';
 import { ApiError } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
@@ -13,9 +15,21 @@ import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 const BOGOTA_CENTER: [number, number] = [4.65, -74.08];
 
 export function MapaRutasPage() {
+  const user = useAuthStore((s) => s.user);
+  const isConductor = user?.role === 'CONDUCTOR';
+
+  // El conductor solo puede ver entregas de una ruta suya — el backend lo exige.
+  const routesQuery = useQuery({
+    queryKey: ['routes', 'driver', user?.id],
+    queryFn: () => apiClient.listRoutes({ driverId: user!.id, page: 1, limit: 5 }),
+    enabled: isConductor,
+  });
+  const ownRouteId = routesQuery.data?.data[0]?.id;
+
   const query = useQuery({
-    queryKey: ['deliveries', 'mapa'],
-    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 300 }),
+    queryKey: ['deliveries', 'mapa', isConductor ? ownRouteId : 'all'],
+    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 300, routeId: isConductor ? ownRouteId : undefined }),
+    enabled: !isConductor || Boolean(ownRouteId),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
 
@@ -23,11 +37,17 @@ export function MapaRutasPage() {
     (d) => d.destinationLatitude !== null && d.destinationLongitude !== null,
   );
 
+  const noOwnRoute = isConductor && !routesQuery.isLoading && !ownRouteId;
+
   return (
     <PanelLayout>
       <div className="border-b border-slate-200 bg-white px-8 py-6">
         <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Mapa de rutas</h1>
-        <p className="mt-1 text-sm text-slate-500">Distribución geográfica de las entregas del día, coloreadas por estado</p>
+        <p className="mt-1 text-sm text-slate-500">
+          {isConductor
+            ? 'Ubicación de los puntos de entrega de tu ruta de hoy (solo lectura)'
+            : 'Distribución geográfica de las entregas del día, coloreadas por estado'}
+        </p>
       </div>
 
       <div className="p-8">
@@ -35,7 +55,9 @@ export function MapaRutasPage() {
           <ErrorBanner message={query.error instanceof ApiError ? query.error.message : 'No pudimos cargar el mapa.'} />
         )}
 
-        {query.isLoading ? (
+        {noOwnRoute ? (
+          <EmptyState title="Sin ruta asignada" description="Todavía no tienes una ruta activa para hoy." />
+        ) : query.isLoading || routesQuery.isLoading ? (
           <SealLoader label="Cargando mapa…" />
         ) : (
           <div className="overflow-hidden rounded-xl border border-slate-200" style={{ height: '620px' }}>
@@ -62,9 +84,11 @@ export function MapaRutasPage() {
                       <p>{delivery.recipientName}</p>
                       <p className="text-slate-500">{delivery.address}</p>
                       <p className="mt-1 font-semibold">{DELIVERY_STATUS_LABEL[delivery.status]}</p>
-                      <Link to={`/panel/entregas/${delivery.id}`} className="text-cold underline">
-                        Ver detalle →
-                      </Link>
+                      {!isConductor && (
+                        <Link to={`/panel/entregas/${delivery.id}`} className="text-cold underline">
+                          Ver detalle →
+                        </Link>
+                      )}
                     </div>
                   </Popup>
                 </CircleMarker>

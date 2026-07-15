@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PanelLayout } from '#src/layouts/PanelLayout';
 import { apiClient } from '#src/api/client';
+import { useAuthStore } from '#src/store/authStore';
 import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { StatusSeal } from '#src/components/status/StatusSeal';
@@ -18,6 +19,7 @@ const ROUTE_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
 
 export function RoutesPage() {
   const queryClient = useQueryClient();
+  const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
 
   const routesQuery = useQuery({
     queryKey: ['routes', 'panel-list'],
@@ -110,7 +112,7 @@ export function RoutesPage() {
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <StatusSeal label={ROUTE_STATUS_LABEL[route.status]} tone={ROUTE_STATUS_TONE[route.status]} size="sm" />
-                          {nextStatuses.length > 0 && (
+                          {isAdmin && nextStatuses.length > 0 && (
                             <select
                               defaultValue=""
                               disabled={statusMutation.isPending}

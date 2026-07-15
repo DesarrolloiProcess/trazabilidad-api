@@ -3,6 +3,7 @@ import type { ITransaction, ITransactionRepository } from '#src/shared/helpers/t
 import type { IUuidRepository } from '#src/shared/helpers/uuidHandle/domain/uuidHandle.js';
 import { ValidationError } from '#src/shared/Errors/validationError.js';
 import { BusinessLogicError } from '#src/shared/Errors/businessLogicError.js';
+import { Role } from '#src/shared/constant/roles.constant.js';
 
 import { Route } from '#src/modules/route/domain/route.entity.js';
 import type { IRouteRepository } from '#src/modules/route/domain/route.repository.js';
@@ -31,11 +32,18 @@ export class ImportTxtPlanillaUseCase {
   ) {}
 
   async run(command: ImportTxtPlanillaCommand): Promise<ImportResultDto> {
-    if (!command.authUser.distributionCenterId) {
-      throw new BusinessLogicError('El usuario que importa la planilla debe pertenecer a un CEDI');
-    }
+    // El CEDI siempre importa a su propia sede, sin importar lo que haya enviado en el body.
+    // ADMIN no pertenece a ningún CEDI, así que debe indicar explícitamente a cuál importa.
+    const distributionCenterId =
+      command.authUser.role === Role.CEDI ? command.authUser.distributionCenterId : command.distributionCenterId;
 
-    const distributionCenterId = command.authUser.distributionCenterId;
+    if (!distributionCenterId) {
+      throw new BusinessLogicError(
+        command.authUser.role === Role.CEDI
+          ? 'El usuario que importa la planilla debe pertenecer a un CEDI'
+          : 'Selecciona el CEDI destino de esta planilla',
+      );
+    }
 
     const parsedRows = this.txtParser.parseAndValidate(command.content, PLANILLA_TXT_CONFIG);
 

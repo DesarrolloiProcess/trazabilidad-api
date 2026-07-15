@@ -47,7 +47,7 @@ export function App() {
           <Route
             path="/panel/entregas"
             element={
-              <RequireRole roles={['ADMIN']}>
+              <RequireRole roles={['ADMIN', 'CEDI']}>
                 <DeliveriesPage />
               </RequireRole>
             }
@@ -55,7 +55,7 @@ export function App() {
           <Route
             path="/panel/entregas/:id"
             element={
-              <RequireRole roles={['ADMIN']}>
+              <RequireRole roles={['ADMIN', 'CEDI']}>
                 <DeliveryDetailPage />
               </RequireRole>
             }
@@ -63,7 +63,7 @@ export function App() {
           <Route
             path="/panel/rutas"
             element={
-              <RequireRole roles={['ADMIN']}>
+              <RequireRole roles={['ADMIN', 'CEDI']}>
                 <RoutesPage />
               </RequireRole>
             }
@@ -79,7 +79,7 @@ export function App() {
           <Route
             path="/panel/mapa"
             element={
-              <RequireRole roles={['ADMIN']}>
+              <RequireRole roles={['ADMIN', 'CEDI', 'CONDUCTOR']}>
                 <MapaRutasPage />
               </RequireRole>
             }
@@ -87,7 +87,7 @@ export function App() {
           <Route
             path="/panel/facturacion"
             element={
-              <RequireRole roles={['ADMIN']}>
+              <RequireRole roles={['ADMIN', 'CEDI']}>
                 <FacturacionPage />
               </RequireRole>
             }
@@ -128,7 +128,7 @@ export function App() {
           <Route
             path="/cdi"
             element={
-              <RequireRole roles={['CEDI']}>
+              <RequireRole roles={['ADMIN', 'CEDI']}>
                 <CdiVerificationListPage />
               </RequireRole>
             }
@@ -136,7 +136,7 @@ export function App() {
           <Route
             path="/cdi/rutas/:id"
             element={
-              <RequireRole roles={['CEDI']}>
+              <RequireRole roles={['ADMIN', 'CEDI']}>
                 <RouteVerificationPage />
               </RequireRole>
             }
@@ -145,7 +145,7 @@ export function App() {
           <Route
             path="/conductor"
             element={
-              <RequireRole roles={['CONDUCTOR']}>
+              <RequireRole roles={['ADMIN', 'CONDUCTOR']}>
                 <MyRoutePage />
               </RequireRole>
             }
@@ -153,7 +153,7 @@ export function App() {
           <Route
             path="/conductor/entregas/:id"
             element={
-              <RequireRole roles={['CONDUCTOR']}>
+              <RequireRole roles={['ADMIN', 'CONDUCTOR']}>
                 <DeliveryCapturePage />
               </RequireRole>
             }

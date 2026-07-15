@@ -2,6 +2,7 @@ import { and, eq, gte, lte, count, inArray, type SQL } from 'drizzle-orm';
 import { drizzleOrm } from '#src/shared/lib/drizzle/connection.js';
 import { deliveries } from '#src/shared/lib/drizzle/models/delivery.schema.js';
 import { deliveryProducts } from '#src/shared/lib/drizzle/models/deliveryProduct.schema.js';
+import { routes } from '#src/shared/lib/drizzle/models/route.schema.js';
 import { uuidHandle } from '#src/shared/helpers/uuidHandle/infrastructure/dependencies.js';
 import { Delivery, type IDeliveryProduct } from '#src/modules/delivery/domain/delivery.entity.js';
 import type { IDeliveryQuery, IDeliveryRepository } from '#src/modules/delivery/domain/delivery.repository.js';
@@ -70,6 +71,31 @@ async function attachProducts(rows: DeliveryRow[]): Promise<Delivery[]> {
 export class DrizzleDeliveryImpl implements IDeliveryRepository {
   async getMany(query: IDeliveryQuery): Promise<{ data: Delivery[]; total: number }> {
     const offset = (query.page - 1) * query.limit;
+
+    if (query.distributionCenterId) {
+      // Requiere join con routes: deliveries no tiene distribution_center_id propio, cuelga de su ruta.
+      const conditions = [eq(routes.distribution_center_id, query.distributionCenterId)];
+      if (query.routeId) conditions.push(eq(deliveries.route_id, query.routeId));
+      const joinFilter = and(...conditions);
+
+      const [rows, [{ total }]] = await Promise.all([
+        drizzleOrm()
+          .select({ deliveries })
+          .from(deliveries)
+          .innerJoin(routes, eq(deliveries.route_id, routes.id))
+          .where(joinFilter)
+          .limit(query.limit)
+          .offset(offset),
+        drizzleOrm()
+          .select({ total: count() })
+          .from(deliveries)
+          .innerJoin(routes, eq(deliveries.route_id, routes.id))
+          .where(joinFilter),
+      ]);
+
+      return { data: await attachProducts(rows.map((r) => r.deliveries)), total };
+    }
+
     const filters: SQL | undefined = query.routeId ? eq(deliveries.route_id, query.routeId) : undefined;
 
     const [rows, [{ total }]] = await Promise.all([
