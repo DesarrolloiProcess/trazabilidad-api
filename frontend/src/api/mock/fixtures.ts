@@ -31,8 +31,8 @@ export function signaturePlaceholder(seed: string): string {
   const y0 = 55 + (h % 8);
   const path = `M 15 ${y0} Q 45 ${y0 - amp} 75 ${y0} T 135 ${y0} T 195 ${y0 - amp / 2}`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="90" viewBox="0 0 220 90">
-    <rect width="220" height="90" fill="#FAFBFA"/>
-    <path d="${path}" fill="none" stroke="#0F2A3D" stroke-width="2.5" stroke-linecap="round"/>
+    <rect width="220" height="90" fill="#FAFAF8"/>
+    <path d="${path}" fill="none" stroke="#101820" stroke-width="2.5" stroke-linecap="round"/>
   </svg>`;
   return svgToDataUri(svg);
 }
@@ -40,10 +40,10 @@ export function signaturePlaceholder(seed: string): string {
 /** Foto placeholder: rectángulo de marca con el número de guía, en vez de una URL rota. */
 export function photoPlaceholder(trackingNumber: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
-    <rect width="320" height="220" fill="#0F2A3D"/>
-    <polygon points="160,60 210,85 210,135 160,160 110,135 110,85" fill="#16788A"/>
-    <polygon points="160,85 185,97.5 185,122.5 160,135 135,122.5 135,97.5" fill="#F2F5F4"/>
-    <text x="160" y="190" font-family="monospace" font-size="16" fill="#F2F5F4" text-anchor="middle">${trackingNumber}</text>
+    <rect width="320" height="220" fill="#101820"/>
+    <polygon points="160,60 210,85 210,135 160,160 110,135 110,85" fill="#FF5C39"/>
+    <polygon points="160,85 185,97.5 185,122.5 160,135 135,122.5 135,97.5" fill="#FAFAF8"/>
+    <text x="160" y="190" font-family="monospace" font-size="16" fill="#FAFAF8" text-anchor="middle">${trackingNumber}</text>
   </svg>`;
   return svgToDataUri(svg);
 }
