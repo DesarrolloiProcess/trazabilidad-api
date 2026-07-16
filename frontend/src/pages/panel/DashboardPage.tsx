@@ -18,7 +18,7 @@ function isToday(iso: string): boolean {
 export function DashboardPage() {
   const deliveriesQuery = useQuery({
     queryKey: ['deliveries', 'dashboard'],
-    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 200 }),
+    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 100 }),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
 
@@ -43,8 +43,7 @@ export function DashboardPage() {
       <div className="border-b border-slate-200 bg-white px-8 py-6">
         <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Panel operativo</h1>
         <p className="mt-1 text-sm text-slate-500">
-          {new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} — datos de
-          demostración
+          {new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
       </div>
 

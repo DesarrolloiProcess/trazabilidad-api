@@ -59,7 +59,7 @@ export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialo
           {step === 'email' && (
             <>
               <Dialog.Description className="mt-1 text-sm text-slate-500">
-                Ingresa tu correo corporativo y te enviaremos un código de verificación.
+                Ingresa tu correo corporativo para generar tu código de verificación.
               </Dialog.Description>
 
               <form
@@ -98,8 +98,7 @@ export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialo
           {step === 'reset' && (
             <>
               <Dialog.Description className="mt-1 text-sm text-slate-500">
-                Como este es un ambiente de demostración (sin proveedor real de SMS/correo), mostramos el código directamente
-                aquí.
+                Ingresa el código de verificación y tu nueva contraseña.
               </Dialog.Description>
 
               <div className="mt-3 rounded-lg border-l-4 border-cold bg-cold/5 px-4 py-3">

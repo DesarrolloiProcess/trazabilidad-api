@@ -68,11 +68,6 @@ export function PortalLoginPage() {
           </Button>
         </form>
       </div>
-
-      <p className="mt-5 text-center text-xs text-slate-400">
-        Demo: prueba con la guía <span className="font-mono">FARMA-00231</span> y el teléfono{' '}
-        <span className="font-mono">3011234567</span>
-      </p>
     </PortalLayout>
   );
 }

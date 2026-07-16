@@ -12,9 +12,6 @@ const VALID_SAMPLE = `fecha|routeCode|trackingNumber|clienteNit|direccion|destin
 2026-07-10|R-020|FARMA-00300|900123456|Cra 45 #103-22, Bogotá|Farmacia San Rafael|3011234567|MED-1050|Losartán 50mg x30|1|9800
 2026-07-10|R-020|FARMA-00301|900234567|Cll 80 #12-40, Bogotá|Droguería El Roble|3022345678|MED-4410|Metformina 850mg x30|2|8600`;
 
-const MALFORMED_SAMPLE = `fecha|routeCode|trackingNumber
-2026-07-10|R-021|FARMA-00399`;
-
 interface TxtImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -115,14 +112,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
 
               <div className="mt-2 flex gap-4 text-xs">
                 <button type="button" className="font-semibold text-cold hover:underline" onClick={() => setContent(VALID_SAMPLE)}>
-                  Usar ejemplo válido
-                </button>
-                <button
-                  type="button"
-                  className="font-semibold text-controlled hover:underline"
-                  onClick={() => setContent(MALFORMED_SAMPLE)}
-                >
-                  Usar ejemplo mal formado
+                  Usar plantilla de formato
                 </button>
               </div>
 

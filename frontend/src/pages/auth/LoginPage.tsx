@@ -82,8 +82,6 @@ export function LoginPage() {
             Ingresar al sistema
           </Button>
 
-          <p className="text-center text-xs text-white/30">Demo: cualquier correo de la lista · contraseña farmatrack123</p>
-
           <button
             type="button"
             onClick={() => setForgotOpen(true)}
