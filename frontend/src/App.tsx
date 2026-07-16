@@ -12,7 +12,6 @@ import { DeliveryDetailPage } from '#src/pages/panel/DeliveryDetailPage';
 import { RoutesPage } from '#src/pages/panel/RoutesPage';
 import { DistributionCentersPage } from '#src/pages/panel/DistributionCentersPage';
 import { FacturacionPage } from '#src/pages/panel/FacturacionPage';
-import { MapaRutasPage } from '#src/pages/panel/MapaRutasPage';
 import { UsersPage } from '#src/pages/panel/UsersPage';
 import { ReportesPage } from '#src/pages/panel/ReportesPage';
 import { ConfiguracionPage } from '#src/pages/panel/ConfiguracionPage';
@@ -73,14 +72,6 @@ export function App() {
             element={
               <RequireRole roles={['ADMIN']}>
                 <DistributionCentersPage />
-              </RequireRole>
-            }
-          />
-          <Route
-            path="/panel/mapa"
-            element={
-              <RequireRole roles={['ADMIN', 'CEDI', 'CONDUCTOR']}>
-                <MapaRutasPage />
               </RequireRole>
             }
           />

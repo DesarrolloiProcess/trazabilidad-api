@@ -23,12 +23,12 @@ export function ReportesPage() {
 
   const deliveriesQuery = useQuery({
     queryKey: ['deliveries', 'reportes'],
-    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 500 }),
+    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 100 }),
   });
 
   const routesQuery = useQuery({
     queryKey: ['routes', 'reportes'],
-    queryFn: () => apiClient.listRoutes({ page: 1, limit: 500 }),
+    queryFn: () => apiClient.listRoutes({ page: 1, limit: 100 }),
   });
 
   const centersQuery = useQuery({

@@ -15,15 +15,33 @@ interface NavItem {
   roles: Role[];
 }
 
+interface NavGroup {
+  label: string;
+  roles: Role[];
+  items: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isNavGroup(entry: NavEntry): entry is NavGroup {
+  return 'items' in entry;
+}
+
 /** ADMIN ve todo; CEDI y CONDUCTOR solo lo que la auditoría de permisos definió para su rol. */
-const NAV_ITEMS: NavItem[] = [
+const NAV_ENTRIES: NavEntry[] = [
   { to: '/panel', label: 'Panel', end: true, roles: ['ADMIN'] },
   { to: '/panel/entregas', label: 'Entregas', roles: ['ADMIN', 'CEDI'] },
   { to: '/panel/rutas', label: 'Rutas', roles: ['ADMIN', 'CEDI'] },
-  { to: '/panel/mapa', label: 'Mapa', roles: ['ADMIN', 'CEDI', 'CONDUCTOR'] },
   { to: '/panel/facturacion', label: 'Facturación', roles: ['ADMIN', 'CEDI'] },
-  { to: '/panel/cedis', label: 'CEDIs', roles: ['ADMIN'] },
-  { to: '/panel/usuarios', label: 'Usuarios', roles: ['ADMIN'] },
+  {
+    label: 'Datos maestros',
+    roles: ['ADMIN'],
+    items: [
+      { to: '/panel/usuarios', label: 'Usuarios', roles: ['ADMIN'] },
+      { to: '/panel/cedis', label: 'CEDIs', roles: ['ADMIN'] },
+      { to: '/panel/usuarios?role=CONDUCTOR', label: 'Conductores', roles: ['ADMIN'] },
+    ],
+  },
   { to: '/panel/reportes', label: 'Reportes', roles: ['ADMIN'] },
   { to: '/panel/configuracion', label: 'Configuración', roles: ['ADMIN'] },
   { to: '/cdi', label: 'Verificación CDI', roles: ['ADMIN', 'CEDI'] },
@@ -53,7 +71,7 @@ export function PanelLayout({ children }: PanelLayoutProps) {
     .join('')
     .toUpperCase();
 
-  const visibleItems = NAV_ITEMS.filter((item) => (user ? item.roles.includes(user.role) : false));
+  const visibleEntries = NAV_ENTRIES.filter((entry) => (user ? entry.roles.includes(user.role) : false));
 
   return (
     <div className="flex min-h-screen bg-paper">
@@ -69,21 +87,42 @@ export function PanelLayout({ children }: PanelLayoutProps) {
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {visibleItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                clsx(
-                  'block rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
-                  isActive ? 'bg-cold text-white' : 'text-white/60 hover:bg-white/5 hover:text-white',
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {visibleEntries.map((entry) =>
+            isNavGroup(entry) ? (
+              <div key={entry.label} className="pt-2 first:pt-0">
+                <p className="px-3.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">{entry.label}</p>
+                {entry.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      clsx(
+                        'block rounded-lg px-3.5 py-2 text-sm font-medium transition-colors',
+                        isActive ? 'bg-cold text-white' : 'text-white/60 hover:bg-white/5 hover:text-white',
+                      )
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            ) : (
+              <NavLink
+                key={entry.to}
+                to={entry.to}
+                end={entry.end}
+                className={({ isActive }) =>
+                  clsx(
+                    'block rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors',
+                    isActive ? 'bg-cold text-white' : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  )
+                }
+              >
+                {entry.label}
+              </NavLink>
+            ),
+          )}
         </nav>
 
         <div className="border-t border-white/10 px-4 py-4">

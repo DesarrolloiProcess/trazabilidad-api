@@ -29,7 +29,7 @@ export function DeliveriesPage() {
 
   const query = useQuery({
     queryKey: ['deliveries', 'panel-list'],
-    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 200 }),
+    queryFn: () => apiClient.listDeliveries({ page: 1, limit: 100 }),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
 

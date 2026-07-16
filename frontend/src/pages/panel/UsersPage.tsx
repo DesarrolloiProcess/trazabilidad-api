@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { PanelLayout } from '#src/layouts/PanelLayout';
 import { apiClient } from '#src/api/client';
 import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
+import { EmptyState } from '#src/components/ui/EmptyState';
 import { Button } from '#src/components/ui/Button';
 import { TextField } from '#src/components/ui/TextField';
 import { ApiError, type Role, type UserDto } from '#src/api/types';
@@ -15,9 +17,20 @@ const ROLE_LABEL: Record<Role, string> = {
   CONDUCTOR: 'Conductor',
 };
 
+const ROLE_FILTERS = [
+  { value: 'ALL', label: 'Todos' },
+  { value: 'ADMIN', label: 'Administradores' },
+  { value: 'CEDI', label: 'CEDI' },
+  { value: 'CONDUCTOR', label: 'Conductores' },
+] as const;
+
 export function UsersPage() {
   const [dialogUser, setDialogUser] = useState<UserDto | 'new' | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+
+  const roleParam = searchParams.get('role');
+  const roleFilter = roleParam === 'ADMIN' || roleParam === 'CEDI' || roleParam === 'CONDUCTOR' ? roleParam : 'ALL';
 
   const usersQuery = useQuery({
     queryKey: ['users'],
@@ -36,6 +49,11 @@ export function UsersPage() {
 
   const centersById = new Map((centersQuery.data ?? []).map((c) => [c.id, c.name]));
 
+  const filteredUsers = useMemo(
+    () => (usersQuery.data ?? []).filter((u) => roleFilter === 'ALL' || u.role === roleFilter),
+    [usersQuery.data, roleFilter],
+  );
+
   return (
     <PanelLayout>
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
@@ -51,8 +69,24 @@ export function UsersPage() {
           <ErrorBanner message={usersQuery.error instanceof ApiError ? usersQuery.error.message : 'No pudimos cargar los usuarios.'} />
         )}
 
+        <div className="mb-4 flex flex-wrap gap-2">
+          {ROLE_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setSearchParams(f.value === 'ALL' ? {} : { role: f.value })}
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                roleFilter === f.value ? 'bg-cold text-white' : 'bg-white text-slate-500 border border-slate-300'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         {usersQuery.isLoading ? (
           <SealLoader label="Cargando usuarios…" />
+        ) : filteredUsers.length === 0 ? (
+          <EmptyState title="Sin resultados" description="No hay usuarios con este rol todavía." />
         ) : (
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-left text-sm">
@@ -67,7 +101,7 @@ export function UsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {usersQuery.data?.map((u) => (
+                {filteredUsers.map((u) => (
                   <tr key={u.id} className={u.active ? '' : 'opacity-50'}>
                     <td className="px-4 py-3 font-medium text-navy">{u.name}</td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.email}</td>
