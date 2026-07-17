@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, mysqlEnum, decimal, datetime, boolean, index } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, mysqlEnum, decimal, datetime, boolean, index, longtext } from 'drizzle-orm/mysql-core';
 import { customBuffer } from '../types/customBuffer.js';
 import { baseColumns } from './_shared/baseColumns.js';
 import { routes } from './route.schema.js';
@@ -30,8 +30,8 @@ export const deliveries = mysqlTable(
     /** Coordenadas del destino (geocodificadas al importar), para ubicar la entrega en el mapa antes de que se confirme. */
     destination_latitude: decimal('destination_latitude', { precision: 10, scale: 7 }),
     destination_longitude: decimal('destination_longitude', { precision: 10, scale: 7 }),
-    signature_url: varchar('signature_url', { length: 255 }),
-    photo_url: varchar('photo_url', { length: 255 }),
+    signature_url: longtext('signature_url'),
+    photo_url: longtext('photo_url'),
     receiver_name: varchar('receiver_name', { length: 150 }),
     receiver_id_number: varchar('receiver_id_number', { length: 20 }),
     latitude: decimal('latitude', { precision: 10, scale: 7 }),
