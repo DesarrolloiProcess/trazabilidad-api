@@ -57,6 +57,8 @@ export class ImportTxtPlanillaUseCase {
     const [{ row: firstRow }] = rows;
     const now = new Date();
 
+    await this.validateTrackingNumbersAreNew(rows.map(({ row }) => row.trackingNumber));
+
     const route = new Route({
       id: this.uuidHandle.uuid(),
       code: firstRow.routeCode,
@@ -170,6 +172,25 @@ export class ImportTxtPlanillaUseCase {
     const created = await this.clientRepository.create(client, { tx });
     cache.set(nit, created);
     return created;
+  }
+
+  private async validateTrackingNumbersAreNew(trackingNumbers: string[]): Promise<void> {
+    const uniqueTrackingNumbers = [...new Set(trackingNumbers)];
+
+    const existing = await Promise.all(
+      uniqueTrackingNumbers.map(async (trackingNumber) => {
+        const delivery = await this.deliveryRepository.getByTrackingNumber(trackingNumber);
+        return delivery ? trackingNumber : null;
+      }),
+    );
+
+    const duplicates = existing.filter((trackingNumber): trackingNumber is string => trackingNumber !== null);
+
+    if (duplicates.length > 0) {
+      throw new ValidationError(
+        `El(los) número(s) de guía ya existen en el sistema: ${duplicates.join(', ')}`,
+      );
+    }
   }
 
   private groupByTrackingNumber(rows: RowWithLine[]): Map<string, IPlanillaRow[]> {
