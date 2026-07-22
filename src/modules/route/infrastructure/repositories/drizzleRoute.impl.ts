@@ -1,4 +1,4 @@
-import { and, eq, count, type SQL } from 'drizzle-orm';
+import { and, eq, count, desc, type SQL } from 'drizzle-orm';
 import { drizzleOrm } from '#src/shared/lib/drizzle/connection.js';
 import { routes } from '#src/shared/lib/drizzle/models/route.schema.js';
 import { Route } from '#src/modules/route/domain/route.entity.js';
@@ -42,7 +42,7 @@ export class DrizzleRouteImpl implements IRouteRepository {
     const filters = buildFilters(query);
 
     const [rows, [{ total }]] = await Promise.all([
-      drizzleOrm().select().from(routes).where(filters).limit(query.limit).offset(offset),
+      drizzleOrm().select().from(routes).where(filters).orderBy(desc(routes.date)).limit(query.limit).offset(offset),
       drizzleOrm().select({ total: count() }).from(routes).where(filters),
     ]);
 

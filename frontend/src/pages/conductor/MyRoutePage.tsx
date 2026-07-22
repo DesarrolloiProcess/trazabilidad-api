@@ -11,6 +11,7 @@ import { ApiError, type DeliveryDto } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 const TERMINAL_STATUSES = new Set(['entregado_cliente', 'no_entregado']);
+const TERMINAL_ROUTE_STATUSES = new Set(['completada', 'con_novedad']);
 
 export function MyRoutePage() {
   const { user, logout } = useAuthStore();
@@ -23,7 +24,8 @@ export function MyRoutePage() {
     refetchInterval: LIVE_POLL_INTERVAL,
   });
 
-  const activeRoute = routesQuery.data?.data[0];
+  const routesData = routesQuery.data?.data;
+  const activeRoute = routesData?.find((route) => !TERMINAL_ROUTE_STATUSES.has(route.status)) ?? routesData?.[0];
 
   const deliveriesQuery = useQuery({
     queryKey: ['deliveries', 'route', activeRoute?.id],
