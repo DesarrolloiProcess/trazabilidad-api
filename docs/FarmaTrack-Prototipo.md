@@ -1,213 +1,171 @@
-# FarmaTrack — Prototipo funcional
+# FarmaTrack — Sistema de trazabilidad de entregas
 
-**Entregable de presentación** · Frontend desplegado en producción, contra un backend real (mínimo, en memoria) con los mismos contratos del backend hexagonal definitivo.
+**Entregable de presentación** · Sistema en producción, backend real (MySQL) sobre arquitectura hexagonal, frontend React desplegado públicamente.
 
 **🔗 Demo en vivo:** **https://farmatrack.syncip.co**
-**🔗 API en producción:** backend real (MySQL) desplegado en Railway, ya conectado — el `demo-server` mencionado más abajo quedó obsoleto y no se usa en esta URL.
-
-> ⚠️ Este documento describe una iteración anterior del prototipo (backend mock en memoria, terminología "CEDI"). El sistema en `https://farmatrack.syncip.co` ya corre contra el backend real y usa el modelo droguería → paciente. Se deja como referencia histórica de decisiones de diseño; no reflejar sus URLs ni su terminología como estado actual.
+**🔗 API en producción:** backend real (MySQL en Amazon RDS) desplegado en Railway.
 
 ---
 
 ## 1. Resumen ejecutivo
 
-FarmaTrack es el sistema de trazabilidad de entregas para una empresa de distribución farmacéutica con varios CEDIs a nivel nacional. Resuelve un problema muy concreto: hoy la facturación se emite *antes* del despacho, sin evidencia real de que el pedido llegó a su destino. FarmaTrack invierte ese orden — la entrega se confirma con firma, foto, cédula del receptor y geolocalización, **y solo entonces se habilita la facturación** — mientras el destinatario final puede seguir su pedido, ver la evidencia de su propia entrega, y consultarlo sin necesidad de crear una cuenta.
+FarmaTrack es el sistema de trazabilidad de entregas para droguerías que despachan medicamentos directamente al domicilio del paciente. Resuelve un problema muy concreto: hoy la facturación se emite *antes* del despacho, sin evidencia real de que el pedido llegó a su destino. FarmaTrack invierte ese orden — la entrega se confirma con firma, foto, cédula de quien recibe y geolocalización, **y solo entonces se habilita la facturación** — mientras el paciente puede seguir su pedido, ver la evidencia de su propia entrega, y consultarlo sin necesidad de crear una cuenta.
 
-Este prototipo cubre 4 experiencias (Portal Web del CEDI/Administración, App CDI móvil de verificación, App del Conductor, Portal del Cliente), desplegadas públicamente y compartiendo datos en tiempo real entre dispositivos — no es una demo local aislada.
+El sistema cubre el flujo **droguería → paciente**: cada droguería despacha sus propios pedidos, un conductor los transporta y confirma la entrega en el domicilio del paciente. Cuando el pedido corresponde a una EPS o convenio, ese dato queda asociado a la entrega de forma opcional — el paciente sigue siendo siempre el destinatario real.
 
----
+Cubre 4 experiencias, desplegadas públicamente y compartiendo datos en tiempo real entre dispositivos — no es una demo local aislada:
 
-## 2. Máquina de estados (actualizada con el feedback de gerencia)
-
-```
-Creado ──(CEDI móvil verifica cantidades/contenido)──▶ Alistado
-Alistado ──(ADMIN asigna conductor en Portal Web)────▶ Alistado + conductor asignado
-Alistado ──(Conductor confirma "Recibir para transporte")──▶ En tránsito
-En tránsito ──(Conductor captura firma/foto/receptor/geo)──▶ Entregado cliente  ──▶ Habilita facturación
-En tránsito ──(Conductor marca no entregado + observación)──▶ No entregado
-```
-
-- **"Verificado" y "Alistado" se unificaron en un solo estado.** El brief original ya definía "Alistado" como "verificación en el CEDI" — separar ambos habría creado dos timestamps para el mismo evento sin un actor distinto entre ellos. La verificación desde el móvil CDI *es* lo que produce el estado Alistado.
-- **La asignación de conductor se queda en el Portal Web, exclusiva de ADMIN.** Asignar requiere comparar todas las rutas/conductores a la vez (una tabla) — es una tarea de escritorio, no de "una pantalla, un objetivo" como el móvil. El perfil CDI se enfoca 100% en verificar contenido.
-- **El login ahora redirige a 3 experiencias distintas según rol**: ADMIN → Portal Web (`/panel`), CEDI → App de verificación (`/cdi`, nueva), CONDUCTOR → App de entregas (`/conductor`, sin cambios).
+- **Portal Web** — administración completa (rol ADMIN) y operación diaria de cada droguería (rol CEDI).
+- **App de verificación** — la droguería confirma que la planilla recibida coincide con lo despachado.
+- **App del Conductor** — recibe la ruta, transporta y confirma cada entrega con evidencia.
+- **Portal del Paciente** — consulta pública del estado de su pedido, sin necesidad de cuenta.
 
 ---
 
-## 3. Pantallas construidas
+## 2. Flujo de una entrega
 
-### Portal Web (exclusivo ADMIN)
+```
+Creado ────────(droguería verifica cantidades/contenido)───────▶ Alistado
+Alistado ──────(se asigna un conductor a la ruta)───────────────▶ Alistado + conductor asignado
+Alistado ──────(conductor confirma "Recibir para transporte")──▶ Entregado a transportador
+Entregado a transportador ──(firma + foto + receptor + geo)────▶ Entregado al paciente ──▶ Habilita facturación
+Entregado a transportador ──(conductor marca no entregado)─────▶ No entregado
+```
 
-**1. Inicio de sesión** — Público (previo a autenticación) · `POST /api/users/login`
+- La planilla llega al sistema en estado **Creado** (importación manual desde el Portal Web).
+- La **droguería de origen** verifica desde su app móvil que el contenido físico coincide con lo declarado — cada punto de la planilla debe marcarse antes de habilitar la confirmación. Al verificar, la entrega pasa a **Alistado**.
+- Desde el Portal Web se **asigna un conductor** a la ruta — cada droguería solo ve y asigna conductores de su propia sede.
+- El conductor confirma que recibió la mercancía para transporte, y en el domicilio del paciente captura **firma, foto de soporte, nombre y cédula de quien recibe, y geolocalización real** del punto de entrega.
+- Al confirmarse la entrega, el pedido queda **habilitado para facturación** con el timestamp exacto, y se genera automáticamente el acta de entrega descargable en PDF.
+- Si el conductor no puede completar la entrega, la marca como **No entregado** con una observación obligatoria.
+
+---
+
+## 3. Pantallas del sistema
+
+### Portal Web — Administración (rol ADMIN)
+
+**1. Inicio de sesión**
 ![Inicio de sesión](screenshots/01-login.png)
 
-**2. Panel operativo (dashboard)** — ADMIN · `GET /api/deliveries`, `GET /api/routes`
-![Panel operativo](screenshots/02-panel-dashboard.png)
-
-**3. Entregas — listado y filtros** — ADMIN · `GET /api/deliveries`
+**2. Entregas — listado, búsqueda y filtro por estado**
 ![Entregas](screenshots/03-panel-entregas.png)
 
-**4. Importar planilla (TXT) — con selector de CEDI destino** — ADMIN · `POST /api/txt-import`
+**3. Importar planilla (TXT)** — con selector de droguería de destino
 ![Importar planilla](screenshots/04-panel-import-dialog.png)
 
-Como el Portal Web ya es exclusivo de ADMIN (que no pertenece a un CEDI específico), el diálogo ahora pide explícitamente **a qué CEDI** pertenece la planilla — antes se inferría automáticamente del usuario que la subía.
+**4. Detalle de entrega** — contenido del envío, mapa de ubicación, y evidencia de entrega (firma, foto, geolocalización) una vez confirmada
+![Detalle de entrega](screenshots/07-panel-delivery-detail.png)
 
-**5. Importar planilla — éxito** — ADMIN · `POST /api/txt-import`
-![Importar planilla éxito](screenshots/05-panel-import-success.png)
-
-**6. Importar planilla — error (TXT mal formado)** — ADMIN · `POST /api/txt-import`
-![Importar planilla error](screenshots/06-panel-import-error.png)
-
-**7. Detalle de entrega — con badge de facturación** — ADMIN · `GET /api/deliveries/:id`
-![Detalle con facturación](screenshots/20-panel-facturacion.png)
-
-Cuando la entrega pasa a "Entregado", aparece automáticamente **"✅ Habilitado para facturación"** con el timestamp exacto — el sistema deja visible el momento en que ese pedido queda listo para facturarse, tal como pidió gerencia.
-
-**8. Rutas — asignar conductor / cambiar estado** — ADMIN · `GET /api/routes`, `GET /api/users`, `PATCH /api/routes/:id/assign-driver`, `PATCH /api/routes/:id/status`
+**5. Rutas** — asignar conductor y controlar el avance de cada ruta del día
 ![Rutas](screenshots/08-panel-rutas.png)
 
-**9. Centros de distribución** — ADMIN · `GET /api/distribution-centers`
-![CEDIs](screenshots/09-panel-cedis.png)
+**6. Facturación** — entregas confirmadas, separadas entre pendientes y ya exportadas a facturación
+![Facturación](screenshots/20-panel-facturacion.png)
 
-### App CDI móvil (verificación) — nueva
+**7. Droguerías** — crear, editar y desactivar sedes
+![Droguerías](screenshots/09-panel-cedis.png)
 
-**10. Planillas por verificar** — CEDI · `GET /api/cdi/pending-verification`
+**8. Usuarios** — crear, editar y desactivar cuentas (ADMIN, CEDI, CONDUCTOR)
+
+**9. Reportes** — resumen por estado con filtro de rango de fecha y droguería
+
+**10. Configuración** — datos de droguería y umbral de alertas
+
+### App de verificación (rol CEDI — operación diaria de cada droguería)
+
+**11. Planillas por verificar**
 ![Lista de verificación](screenshots/17-cdi-lista.png)
 
-**11. Checklist de verificación** — CEDI · `POST /api/cdi/routes/:id/verify`
+**12. Checklist de verificación** — cada punto de la planilla debe marcarse antes de habilitar la confirmación
 ![Checklist](screenshots/18-cdi-checklist.png)
 
-El CEDI debe marcar cada punto de la planilla (cantidades y contenido) antes de que el botón de confirmación se habilite — no se puede verificar "en bloque" sin revisar cada entrega, siguiendo el mismo patrón operativo de Coopidrogas que pidió gerencia.
+### App del Conductor
 
-### App Conductor (sin cambios de flujo, mismo diseño)
-
-**12. Mi ruta de hoy** — CONDUCTOR · `GET /api/routes?driverId=`, `GET /api/deliveries?routeId=`
+**13. Mi ruta de hoy**
 ![Mi ruta](screenshots/10-conductor-mi-ruta.png)
 
-**13. Captura de entrega — recibir para transporte / formulario** — CONDUCTOR
-![Captura inicial](screenshots/11-conductor-captura.png)
-![Formulario de captura](screenshots/11b-conductor-captura-form.png)
+**14. Captura de entrega** — recibir para transporte, luego firma, foto, datos de quien recibe y geolocalización real
+![Captura de entrega](screenshots/12-conductor-captura-llena.png)
 
-**14. Captura de entrega — firma, foto, receptor, geo** — CONDUCTOR · `POST /api/deliveries/:id/evidence`
-![Captura llena](screenshots/12-conductor-captura-llena.png)
+La firma se captura con un lienzo real (no una imagen genérica), la foto usa la cámara del dispositivo, y la ubicación usa la geolocalización real del navegador en el momento de la entrega — no hay coordenadas simuladas ni de relleno.
 
-La firma se captura con un canvas real (pointer events), la foto usa la cámara del dispositivo y se codifica como base64 (portable entre dispositivos — no un blob local), y la ubicación usa `navigator.geolocation` real del navegador.
+### Portal del Paciente (público, sin necesidad de cuenta)
 
-### Portal Cliente (público, sin login)
-
-**15. Consulta de pedido** — Público, verificado por guía + teléfono/documento
+**15. Consulta de pedido** — por número de guía + teléfono o documento
 ![Consulta de pedido](screenshots/13-portal-login.png)
 
-**16. Mis entregas (historial del cliente)** — Público, verificado
+**16. Mis pedidos**
 ![Mis entregas](screenshots/14-portal-mis-entregas.png)
 
-**17. Detalle de guía — con evidencia de entrega** — Público, verificado
+**17. Detalle de guía** — con evidencia de entrega (firma y foto) una vez el pedido fue entregado
 ![Detalle con evidencia](screenshots/19-portal-evidencia.png)
 
-Nuevo: cuando el pedido está "Entregado", el cliente ahora ve **la firma y la foto de su propia entrega** — antes solo veía el estado y el contenido, sin la prueba visual.
-
-**18. Error — guía no encontrada** — Público
-![Error guía no encontrada](screenshots/16-portal-error-guia.png)
-
-### Nuevas pantallas de esta ronda (sin captura aún)
-
-**Portal Web (ADMIN)**
-- **Facturación** — `GET /api/deliveries`, `POST /api/deliveries/:id/export-invoice`. Lista las entregas ya confirmadas (`entregado_cliente`) pendientes de exportar y las ya exportadas.
-- **Mapa de rutas** — `GET /api/deliveries`. `react-leaflet` + OpenStreetMap, puntos coloreados por estado con la misma paleta del resto del sistema.
-- **Usuarios** — `GET/POST/PATCH /api/users`. Crear, editar y desactivar cuentas (ADMIN, CEDI, CONDUCTOR).
-- **CEDIs** (ahora editable) — `POST/PATCH /api/distribution-centers`. Crear, editar y desactivar centros de distribución.
-- **Reportes** — sobre `GET /api/deliveries` y `GET /api/routes` ya cargados, sin endpoint nuevo. Filtro por rango de fecha y CEDI, conteo por estado con barras simples.
-- **Configuración** — edición de CEDI (mismo formulario que Usuarios/CEDIs) + umbral de alertas guardado en `localStorage`.
-- **Mi perfil** — `POST /api/users/change-password`.
-
-**App Conductor**
-- **Escanear guía** — cámara vía `html5-qrcode`, coincide contra `trackingNumber` de las entregas de la ruta activa y navega directo al detalle.
-
-**Detalle de entrega (Portal Web) y detalle público (Portal Cliente)**
-- **Descargar acta de entrega** — PDF generado en el cliente (jsPDF), con guía, dirección, productos, datos del receptor, firma, foto y un código QR de la guía.
-
-**Login**
-- **¿Olvidaste tu contraseña?** — `POST /api/users/request-otp` + `POST /api/users/reset-password`. El código OTP se muestra en pantalla (no hay proveedor real de SMS/correo en este demo).
-
 ---
 
-## 4. El mock ahora es compartido entre dispositivos
-
-Antes, cada pestaña del navegador tenía su propia copia de los datos en memoria — un cambio hecho en el móvil no se veía en el Portal Web de otro dispositivo. Se resolvió con:
-
-- **`demo-server/`**: un backend Express mínimo (arrays en memoria, sin base de datos), desplegado en Render, que expone exactamente los mismos endpoints que espera el frontend (`httpApiClient.ts`, ya escrito desde el prototipo anterior).
-- **Polling liviano** (`refetchInterval` de TanStack Query, cada 4 segundos) en las pantallas que deben sentirse "en vivo" — sin necesidad de meter websockets todavía.
-
-Se verificó con 3 navegadores simultáneos (Portal Web ADMIN + App CDI + App Conductor) que una verificación de planilla o una entrega confirmada aparecen en las otras pantallas sin recargar la página.
-
----
-
-## 5. Cobertura funcional
+## 4. Cobertura funcional
 
 | Funcionalidad | Estado |
 |---|---|
-| Login unificado con redirección a 3 experiencias por rol | ✅ Construido |
-| Perfil CDI móvil: verificación de planilla (Creado → Alistado) | ✅ Construido |
-| Selector de CEDI destino al importar planilla (ADMIN) | ✅ Construido |
-| Badge "Habilitado para facturación" con timestamp | ✅ Construido |
-| Evidencia de entrega (firma + foto) visible en el Portal Cliente | ✅ Construido |
-| Mock compartido entre dispositivos (demo-server + polling) | ✅ Construido |
-| Despliegue público (Vercel + Render) | ✅ Construido |
-| Dashboard con KPIs y alertas críticas | ✅ Construido |
-| Listado de entregas con búsqueda y filtro por estado | ✅ Construido |
-| Asignar conductor a una ruta (exclusivo ADMIN, Portal Web) | ✅ Construido |
-| Cambiar estado de ruta respetando transiciones válidas | ✅ Construido |
-| Captura real de firma, foto, receptor y geolocalización | ✅ Construido |
-| Marcar entrega como no entregada (con observación) | ✅ Construido |
-| Portal cliente: cuenta con historial completo por NIT/teléfono | ✅ Construido |
-| Estados de error (login fallido, guía no encontrada, TXT mal formado) | ✅ Construido |
-| UI de facturación consolidada (`invoiceExport`) | ✅ Construido — listado "Facturación" (ADMIN) con exportación por entrega |
-| Descarga de acta de entrega en PDF / etiqueta QR | ✅ Construido — PDF generado en el cliente (jsPDF) desde Portal Web y Portal Cliente, con QR de la guía embebido |
-| Mapa en vivo de rutas | ✅ Construido — `react-leaflet` + OpenStreetMap, puntos coloreados por estado (estático, sin GPS en tiempo real) |
-| Escaneo de código de guía por cámara (del mockup) | ✅ Construido — `html5-qrcode` en la App Conductor, navega directo a la entrega escaneada |
-| CRUD de usuarios/CEDIs desde el panel | ✅ Construido — crear/editar/desactivar usuarios y CEDIs (ADMIN) |
-| Cambio de contraseña / recuperación por OTP | ✅ Construido — "Mi perfil" (cambio) y "¿Olvidaste tu contraseña?" en login (el OTP se muestra en pantalla, sin proveedor real de SMS/correo) |
-| Reportes (resumen por estado, filtro de fecha y CEDI) | ✅ Construido — sobre los datos ya cargados, sin nuevo endpoint |
-| Configuración (datos de CEDI + umbral de alertas) | ✅ Construido — el umbral de alertas se guarda en `localStorage`, aún no conectado a ninguna alerta automática |
-| Correo de confirmación de carga exitosa (brief 3.1) | ⛔ Pendiente también en el backend real (sin helper de email) |
-| Notificación real por WhatsApp | ⛔ El backend real ya dispara el evento; falta conectar un proveedor |
+| Login unificado con redirección según rol (ADMIN / CEDI / CONDUCTOR) | ✅ |
+| Verificación de planilla en la droguería de origen (Creado → Alistado) | ✅ |
+| Selector de droguería de destino al importar planilla | ✅ |
+| Asignar conductor a una ruta, acotado a la propia droguería | ✅ |
+| Cambiar estado de ruta respetando las transiciones válidas | ✅ |
+| Captura real de firma, foto, receptor y geolocalización | ✅ |
+| Marcar entrega como no entregada, con observación obligatoria | ✅ |
+| Habilitación automática de facturación al confirmar la entrega | ✅ |
+| Exportación a facturación desde el Portal Web | ✅ |
+| Descarga de acta de entrega en PDF (con código QR de la guía) | ✅ |
+| Mapa de ubicación por entrega (destino declarado + punto real de entrega) | ✅ |
+| Portal del paciente: consulta sin cuenta, historial completo por guía + teléfono/documento | ✅ |
+| Campo opcional de EPS/convenio asociado a la entrega (paciente sigue siendo el destinatario) | ✅ |
+| CRUD de usuarios y droguerías desde el panel | ✅ |
+| Cambio de contraseña / recuperación por código (OTP en pantalla) | ✅ |
+| Reportes por estado, con filtro de fecha y droguería | ✅ |
+| Configuración de droguería y umbral de alertas | ✅ |
+| Permisos por rol validados en backend (no solo ocultos en la interfaz) | ✅ |
+| Notificación por WhatsApp al paciente | ⛔ Evento ya se dispara; falta conectar un proveedor real |
+| Correo de confirmación de carga exitosa | ⛔ Pendiente, sin proveedor de correo conectado |
+| Proveedor real de OTP/SMS | ⛔ El código de recuperación se muestra en pantalla, sin envío real |
+
+---
+
+## 5. Stack técnico
+
+- **Backend**: Node.js + TypeScript, arquitectura hexagonal (casos de uso, entidades de dominio, repositorios), Express, Drizzle ORM sobre MySQL 8 (Amazon RDS), autenticación JWT (RS256).
+- **Frontend**: Vite + React 18 + TypeScript estricto, React Router con *guards* por rol, TanStack Query (cache + actualización en vivo por polling), Zustand (sesión), Tailwind + Radix UI, React Hook Form + Zod.
+- **Mapa**: `react-leaflet` + OpenStreetMap, sin necesidad de llave de API.
+- **Despliegue**: backend y frontend en **Railway**, frontend servido bajo dominio propio (`farmatrack.syncip.co`).
+- **Sistema de diseño propio**: "sello" hexagonal con muesca como elemento de firma visual; paleta anclada en el mundo farmacéutico; tipografía Barlow Condensed + Public Sans + IBM Plex Mono, autohospedadas.
 
 ---
 
 ## 6. Próximos pasos
 
-1. **Backend real**: levantar MySQL 8.0 y las llaves RS256 para `trazabilidad-api` (el backend hexagonal completo, hoy sin desplegar). El `demo-server` actual es deliberadamente desechable — replicó el estado "Verificado/Alistado", el selector de CEDI y todos los endpoints nuevos de esta ronda (facturación, CEDIs/usuarios, contraseña/OTP), pero esos mismos cambios deben portarse al backend real (entidades, casos de uso) cuando se conecte de verdad.
-2. **Frontend → backend real**: cambiar `VITE_API_BASE_URL` en Vercel de la URL de Render al backend real. Ningún componente cambia — el contrato ya es el mismo.
-3. **WhatsApp Business API**: conectar un proveedor real (Twilio, Meta Cloud API) en el helper `whatsappNotifier` del backend.
-4. **Email de confirmación de carga** (brief 3.1) y **proveedor real de OTP/SMS**: hoy el código de recuperación de contraseña se muestra en pantalla porque no hay proveedor de correo/SMS conectado — ambas piezas quedan pendientes en el backend real.
-5. **Umbral de alertas configurable**: hoy se guarda en `localStorage` desde la pantalla de Configuración, pero todavía no dispara ninguna alerta automática — falta conectarlo a una regla de negocio real cuando el backend lo soporte.
+1. **Proveedor real de WhatsApp Business API** (Twilio o Meta Cloud API) — el sistema ya dispara el evento de notificación al paciente en cada cambio de estado relevante, falta conectarlo a un proveedor real de envío.
+2. **Proveedor real de correo y SMS** — para la confirmación de carga de planilla y el envío real del código de recuperación de contraseña (hoy se muestra en pantalla).
+3. **Umbral de alertas configurable** — hoy se guarda desde la pantalla de Configuración pero aún no dispara ninguna alerta automática; falta conectarlo a una regla de negocio.
 
 ---
 
-## 7. Stack técnico y decisiones de arquitectura
+## Cómo acceder
 
-- **Frontend**: Vite + React 18 + TypeScript estricto, React Router v6 con *guards* por rol, TanStack Query (cache + polling), Zustand (sesión), Tailwind + Radix UI, React Hook Form + Zod.
-- **Capa de API mock/real** (`frontend/src/api/`): `apiClient.types.ts` define el contrato único; `mock/mockApiClient.ts` (en memoria, para desarrollo offline) e `httpApiClient.ts` (HTTP real) lo implementan; `client.ts` decide cuál usar vía `VITE_API_MODE`.
-- **`demo-server/`** (nuevo): Express + JWT (HS256, simple porque es desechable) + arrays en memoria, con la misma forma de datos que el backend real. Es lo que permite que la demo se vea "en vivo" entre dispositivos sin esperar a MySQL.
-- **Despliegue**: frontend en **Vercel** (cero configuración para Vite, CLI excelente); `demo-server` en **Render** (free tier, deploy directo desde GitHub vía blueprint `render.yaml`).
-- **Sistema de diseño propio**, sin cambios: "sello" hexagonal con muesca como elemento de firma visual; paleta anclada en el mundo farmacéutico (teal de cadena de frío, naranja de alerta térmica, verde de dispensación, rojo de medicamento controlado); tipografía Barlow Condensed + Public Sans + IBM Plex Mono, autohospedadas.
+**En producción:** https://farmatrack.syncip.co
 
----
+Usuarios de prueba (contraseña `Farmatrack2026!` para todos):
 
-## Cómo correr el prototipo
+| Rol | Nombre | Correo | Droguería |
+|---|---|---|---|
+| ADMIN | Anamaría Ángel | `admin@iprocess.co` | Acceso completo |
+| CEDI | María Rodríguez | `maria.rodriguez@farmatrack.co` | Droguería Bogotá Norte |
+| CONDUCTOR | Carlos Peña | `carlos.pena@farmatrack.co` | Droguería Bogotá Norte |
+| CONDUCTOR | — | `conductor.medellin@test.com` | Droguería Medellín |
 
-**En producción:** https://farmatrack.syncip.co (backend real, no el mock descrito en esta sección)
+**Portal del paciente** (consulta por guía + teléfono, sin necesidad de contraseña):
 
-**En local:**
-```bash
-# Backend mínimo compartido
-cd demo-server && npm install && npm start   # puerto 3001
-
-# Frontend (frontend/.env.local → VITE_API_MODE=real, VITE_API_BASE_URL=http://localhost:3001)
-cd frontend && npm install && npm run dev     # puerto 5173
-```
-
-Usuarios de prueba (contraseña `farmatrack123` para todos):
-- **ADMIN** (Portal Web completo): `admin@iprocess.co`
-- **CEDI** (verificación móvil): `maria.rodriguez@farmatrack.co` — CEDI Bogotá Norte
-- **CONDUCTOR** (entregas móvil): `carlos.pena@farmatrack.co`
-- **Portal cliente**: guía `FARMA-00231` + teléfono `3011234567`
+| Guía | Teléfono | Estado |
+|---|---|---|
+| `FARMA-INTERMEDICA` | `3213344556` | Creado |
+| `FARMA-90001` | `3101234567` | Entregado, con evidencia completa |
+| `FARMA-00801` | `3151234513` | No entregado |
