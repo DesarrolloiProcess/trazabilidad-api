@@ -64,7 +64,7 @@ export function ReportesPage() {
     <PanelLayout>
       <div className="border-b border-slate-200 bg-white px-8 py-6">
         <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Reportes</h1>
-        <p className="mt-1 text-sm text-slate-500">Resumen de entregas por estado, filtrado por fecha y CEDI</p>
+        <p className="mt-1 text-sm text-slate-500">Resumen de entregas por estado, filtrado por fecha y droguería</p>
       </div>
 
       <div className="p-8">
@@ -92,13 +92,13 @@ export function ReportesPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">CEDI</label>
+            <label className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">Droguería</label>
             <select
               value={cediFilter}
               onChange={(e) => setCediFilter(e.target.value)}
               className="rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-navy"
             >
-              <option value="all">Todos los CEDIs</option>
+              <option value="all">Todas las droguerías</option>
               {centersQuery.data?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

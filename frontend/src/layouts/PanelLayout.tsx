@@ -38,20 +38,20 @@ const NAV_ENTRIES: NavEntry[] = [
     roles: ['ADMIN'],
     items: [
       { to: '/panel/usuarios', label: 'Usuarios', roles: ['ADMIN'] },
-      { to: '/panel/cedis', label: 'CEDIs', roles: ['ADMIN'] },
+      { to: '/panel/cedis', label: 'Droguerías', roles: ['ADMIN'] },
       { to: '/panel/usuarios?role=CONDUCTOR', label: 'Conductores', roles: ['ADMIN'] },
     ],
   },
   { to: '/panel/reportes', label: 'Reportes', roles: ['ADMIN'] },
   { to: '/panel/configuracion', label: 'Configuración', roles: ['ADMIN'] },
-  { to: '/cdi', label: 'Verificación CDI', roles: ['ADMIN', 'CEDI'] },
+  { to: '/cdi', label: 'Verificación de planillas', roles: ['ADMIN', 'CEDI'] },
   { to: '/conductor', label: 'App Conductor', roles: ['ADMIN', 'CONDUCTOR'] },
   { to: '/panel/perfil', label: 'Mi perfil', roles: ['ADMIN', 'CEDI', 'CONDUCTOR'] },
 ];
 
 const ROLE_LABEL: Record<Role, string> = {
   ADMIN: 'Administrador',
-  CEDI: 'CEDI',
+  CEDI: 'Droguería',
   CONDUCTOR: 'Conductor',
 };
 

@@ -8,9 +8,9 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { useAuthStore } from '#src/store/authStore';
 
 const VALID_SAMPLE = `fecha|routeCode|trackingNumber|clienteNit|direccion|destinatarioNombre|destinatarioTelefono|productoCodigo|productoDescripcion|productoCantidad|productoPrecio
-2026-07-10|R-020|FARMA-00300|900123456|Cra 45 #103-22, Bogotá|Farmacia San Rafael|3011234567|MED-1042|Amoxicilina 500mg x21|3|15400
-2026-07-10|R-020|FARMA-00300|900123456|Cra 45 #103-22, Bogotá|Farmacia San Rafael|3011234567|MED-1050|Losartán 50mg x30|1|9800
-2026-07-10|R-020|FARMA-00301|900234567|Cll 80 #12-40, Bogotá|Droguería El Roble|3022345678|MED-4410|Metformina 850mg x30|2|8600`;
+2026-07-10|R-020|FARMA-00300|900123456|Cra 45 #103-22, Bogotá|Diana Torres|3011234567|MED-1042|Amoxicilina 500mg x21|3|15400
+2026-07-10|R-020|FARMA-00300|900123456|Cra 45 #103-22, Bogotá|Diana Torres|3011234567|MED-1050|Losartán 50mg x30|1|9800
+2026-07-10|R-020|FARMA-00301||Cll 80 #12-40, Bogotá|Julián Peña|3022345678|MED-4410|Metformina 850mg x30|2|8600`;
 
 interface TxtImportDialogProps {
   open: boolean;
@@ -61,8 +61,8 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
           </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-slate-500">
             Pega el contenido de la planilla plana. El formato de columnas lo define iProcess — cada línea es un producto,
-            agrupado por número de guía. La planilla llega en estado "Creado" y queda pendiente de verificación por el CEDI
-            destino desde su app móvil.
+            agrupado por número de guía. La planilla llega en estado "Creado" y queda pendiente de verificación por la
+            droguería de origen desde su app móvil.
           </Dialog.Description>
 
           {mutation.isSuccess ? (
@@ -70,7 +70,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
               <p className="font-display text-sm font-semibold uppercase tracking-wide text-dispensed">Planilla cargada</p>
               <p className="mt-1 text-sm text-navy/80">
                 Ruta <span className="font-mono font-semibold">{mutation.data.routeCode}</span> creada con{' '}
-                <strong>{mutation.data.deliveriesCount}</strong> entregas. Queda pendiente de verificación en el CEDI.
+                <strong>{mutation.data.deliveriesCount}</strong> entregas. Queda pendiente de verificación en la droguería.
               </p>
               <Button size="md" className="mt-3" onClick={() => handleClose(false)}>
                 Listo
@@ -81,7 +81,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
               {needsCediSelector && (
                 <div className="mt-4">
                   <label htmlFor="import-cedi" className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">
-                    CEDI destino
+                    Droguería de origen
                   </label>
                   <select
                     id="import-cedi"
@@ -89,7 +89,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
                     onChange={(e) => setDistributionCenterId(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-navy"
                   >
-                    <option value="">Selecciona el CEDI que recibe esta planilla…</option>
+                    <option value="">Selecciona la droguería que recibe esta planilla…</option>
                     {centersQuery.data?.map((cedi) => (
                       <option key={cedi.id} value={cedi.id}>
                         {cedi.name}
@@ -97,7 +97,7 @@ export function TxtImportDialog({ open, onOpenChange }: TxtImportDialogProps) {
                     ))}
                   </select>
                   {!distributionCenterId && (
-                    <p className="mt-1 text-xs font-medium text-controlled">Selecciona un CEDI para poder importar.</p>
+                    <p className="mt-1 text-xs font-medium text-controlled">Selecciona una droguería para poder importar.</p>
                   )}
                 </div>
               )}

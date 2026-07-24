@@ -27,19 +27,19 @@ export function DistributionCentersPage() {
     <PanelLayout>
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Centros de distribución</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Droguerías</h1>
           <p className="mt-1 text-sm text-slate-500">Cobertura nacional de FarmaTrack</p>
         </div>
-        <Button onClick={() => setDialogCedi('new')}>Nuevo CEDI</Button>
+        <Button onClick={() => setDialogCedi('new')}>Nueva droguería</Button>
       </div>
 
       <div className="p-8">
         {query.isError && (
-          <ErrorBanner message={query.error instanceof ApiError ? query.error.message : 'No pudimos cargar los CEDIs.'} />
+          <ErrorBanner message={query.error instanceof ApiError ? query.error.message : 'No pudimos cargar las droguerías.'} />
         )}
 
         {query.isLoading ? (
-          <SealLoader label="Cargando CEDIs…" />
+          <SealLoader label="Cargando droguerías…" />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {query.data?.map((cedi) => (
@@ -125,14 +125,14 @@ function CediFormDialog({ cedi, open, onOpenChange }: CediFormDialogProps) {
         <Dialog.Overlay className="fixed inset-0 bg-navy-dark/60 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl focus:outline-none">
           <Dialog.Title className="font-display text-lg font-bold uppercase tracking-wide text-navy">
-            {isEdit ? 'Editar CEDI' : 'Nuevo CEDI'}
+            {isEdit ? 'Editar droguería' : 'Nueva droguería'}
           </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-slate-500">
-            {isEdit ? 'Actualiza los datos del centro de distribución.' : 'Registra un nuevo centro de distribución.'}
+            {isEdit ? 'Actualiza los datos de la droguería.' : 'Registra una nueva droguería.'}
           </Dialog.Description>
 
           <div className="mt-4 space-y-4">
-            <TextField label="Nombre" value={name} onChange={(e) => setName(e.target.value)} placeholder="CEDI Bogotá Norte" />
+            <TextField label="Nombre" value={name} onChange={(e) => setName(e.target.value)} placeholder="Droguería Bogotá Norte" />
             <TextField label="Ciudad" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Bogotá" />
             <TextField label="Dirección" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Cra 45 #103-22" />
           </div>
@@ -148,7 +148,7 @@ function CediFormDialog({ cedi, open, onOpenChange }: CediFormDialogProps) {
               Cancelar
             </Button>
             <Button isLoading={mutation.isPending} disabled={!canSubmit} onClick={() => mutation.mutate()}>
-              {isEdit ? 'Guardar cambios' : 'Crear CEDI'}
+              {isEdit ? 'Guardar cambios' : 'Crear droguería'}
             </Button>
           </div>
         </Dialog.Content>

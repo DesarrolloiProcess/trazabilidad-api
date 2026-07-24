@@ -14,7 +14,7 @@ import { getPortalSession } from '#src/pages/portal/portalSession';
 import { generateActaPdf } from '#src/utils/generateActaPdf';
 
 const STATUS_EVIDENCE_COPY: Record<string, string> = {
-  creado: 'Tu pedido fue recibido y está siendo preparado en el CEDI.',
+  creado: 'Tu pedido fue recibido y está siendo preparado en la droguería.',
   alistado: 'Tu pedido está alistado y pronto será entregado al transportador.',
   entregado_transportador: 'Tu pedido va en camino con el transportador asignado.',
   entregado_cliente: 'Entrega confirmada. Validada con firma digital y geolocalización.',

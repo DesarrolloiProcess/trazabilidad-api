@@ -187,7 +187,7 @@ export function DeliveryDetailPage() {
 
               <dl className="mt-4 space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-slate-400">Destinatario</dt>
+                  <dt className="text-slate-400">Paciente</dt>
                   <dd className="font-medium text-navy">{query.data.recipientName}</dd>
                 </div>
                 <div className="flex justify-between gap-4">

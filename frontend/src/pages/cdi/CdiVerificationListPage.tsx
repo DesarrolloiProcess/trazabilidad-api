@@ -33,11 +33,11 @@ export function CdiVerificationListPage() {
   });
 
   return (
-    <ConductorLayout title="Planillas por verificar" subtitle={user?.name} brandLabel="FarmaTrack CEDI">
+    <ConductorLayout title="Planillas por verificar" subtitle={user?.name} brandLabel="FarmaTrack Droguería">
       {isAdmin && (
         <div className="mb-4">
           <label htmlFor="cedi-selector" className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">
-            CEDI a revisar
+            Droguería a revisar
           </label>
           <select
             id="cedi-selector"
@@ -45,7 +45,7 @@ export function CdiVerificationListPage() {
             onChange={(e) => setSelectedCediId(e.target.value)}
             className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-navy"
           >
-            <option value="">Selecciona un CEDI…</option>
+            <option value="">Selecciona una droguería…</option>
             {centersQuery.data?.map((cedi) => (
               <option key={cedi.id} value={cedi.id}>
                 {cedi.name}
@@ -62,7 +62,7 @@ export function CdiVerificationListPage() {
       )}
 
       {!distributionCenterId ? (
-        <EmptyState title="Selecciona un CEDI" description="Elige el CEDI cuyas planillas quieres revisar." />
+        <EmptyState title="Selecciona una droguería" description="Elige la droguería cuyas planillas quieres revisar." />
       ) : query.isLoading ? (
         <SealLoader label="Buscando planillas…" />
       ) : !query.data || query.data.length === 0 ? (

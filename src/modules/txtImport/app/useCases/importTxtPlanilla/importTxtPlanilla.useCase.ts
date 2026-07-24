@@ -32,16 +32,16 @@ export class ImportTxtPlanillaUseCase {
   ) {}
 
   async run(command: ImportTxtPlanillaCommand): Promise<ImportResultDto> {
-    // El CEDI siempre importa a su propia sede, sin importar lo que haya enviado en el body.
-    // ADMIN no pertenece a ningún CEDI, así que debe indicar explícitamente a cuál importa.
+    // El usuario CEDI (rol interno) siempre importa a su propia droguería, sin importar lo que haya
+    // enviado en el body. ADMIN no pertenece a ninguna droguería, así que debe indicar a cuál importa.
     const distributionCenterId =
       command.authUser.role === Role.CEDI ? command.authUser.distributionCenterId : command.distributionCenterId;
 
     if (!distributionCenterId) {
       throw new BusinessLogicError(
         command.authUser.role === Role.CEDI
-          ? 'El usuario que importa la planilla debe pertenecer a un CEDI'
-          : 'Selecciona el CEDI destino de esta planilla',
+          ? 'El usuario que importa la planilla debe pertenecer a una droguería'
+          : 'Selecciona la droguería de origen de esta planilla',
       );
     }
 
@@ -85,7 +85,6 @@ export class ImportTxtPlanillaUseCase {
 
         const client = await this.getOrCreateClient(
           firstGroupRow.clienteNit,
-          firstGroupRow.destinatarioNombre,
           firstGroupRow.destinatarioTelefono,
           command.authUser.id,
           clientCache,
@@ -139,29 +138,37 @@ export class ImportTxtPlanillaUseCase {
     };
   }
 
+  /**
+   * clienteNit identifica al convenio/EPS que paga la entrega, no al paciente (ese es
+   * recipientName/receiverName en la propia entrega). Cuando viene vacío, todas las
+   * entregas particulares comparten un mismo registro "Particular" (nit ''), para que
+   * cualquier pantalla que muestre el nombre del pagador lo haga sin dejarlo en blanco.
+   */
   private async getOrCreateClient(
     nit: string,
-    name: string,
     phone: string,
     authUserId: string,
     cache: Map<string, Client>,
     tx: ITransaction,
   ): Promise<Client> {
-    const cached = cache.get(nit);
+    const normalizedNit = nit.trim();
+    const cached = cache.get(normalizedNit);
     if (cached) return cached;
 
-    const existing = await this.clientRepository.getByNit(nit);
+    const existing = await this.clientRepository.getByNit(normalizedNit);
     if (existing) {
-      cache.set(nit, existing);
+      cache.set(normalizedNit, existing);
       return existing;
     }
 
     const now = new Date();
     const client = new Client({
       id: this.uuidHandle.uuid(),
-      nit,
-      name,
-      phone,
+      nit: normalizedNit,
+      // Sin NIT no hay forma de saber el nombre real del convenio desde la planilla (no trae esa columna) —
+      // se usa un nombre honesto en vez de reutilizar el nombre del paciente, que sería incorrecto.
+      name: normalizedNit === '' ? 'Particular' : `Convenio ${normalizedNit}`,
+      phone: normalizedNit === '' ? null : (phone || null),
       active: true,
       createdAt: now,
       updatedAt: now,
@@ -170,7 +177,7 @@ export class ImportTxtPlanillaUseCase {
     });
 
     const created = await this.clientRepository.create(client, { tx });
-    cache.set(nit, created);
+    cache.set(normalizedNit, created);
     return created;
   }
 
@@ -214,10 +221,7 @@ export class ImportTxtPlanillaUseCase {
         errors.push(`Línea ${lineNumber}: routeCode (ruta/número de planilla) vacío`);
       }
 
-      if (!row.clienteNit) {
-        errors.push(`Línea ${lineNumber}: clienteNit vacío`);
-      }
-
+      // clienteNit es opcional: representa el convenio/EPS que paga, no siempre existe (pacientes particulares).
       if (Number.isNaN(Date.parse(row.fecha))) {
         errors.push(`Línea ${lineNumber}: fecha inválida`);
       }

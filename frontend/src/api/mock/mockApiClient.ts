@@ -264,8 +264,8 @@ export const mockApiClient: ApiClient = {
     if (!resolvedDistributionCenterId) {
       throw new ApiError(
         currentUser.role === 'ADMIN'
-          ? 'Selecciona el CEDI destino de esta planilla'
-          : 'El usuario que importa la planilla debe pertenecer a un CEDI',
+          ? 'Selecciona la droguería de origen de esta planilla'
+          : 'El usuario que importa la planilla debe pertenecer a una droguería',
         'BUSINESS_LOGIC_ERROR',
         422,
       );
@@ -299,9 +299,17 @@ export const mockApiClient: ApiClient = {
       const groupRows = grouped.get(trackingNumber)!;
       const [first] = groupRows;
 
-      let client = clients.find((c) => c.nit === first.clienteNit);
+      // clienteNit identifica al convenio/EPS que paga, no al paciente (eso es destinatarioNombre, ya usado
+      // abajo en recipientName) — sin NIT, todas las entregas particulares comparten un cliente "Particular".
+      const normalizedNit = first.clienteNit.trim();
+      let client = clients.find((c) => c.nit === normalizedNit);
       if (!client) {
-        client = { id: `client-${crypto.randomUUID()}`, nit: first.clienteNit, name: first.destinatarioNombre, phone: first.destinatarioTelefono };
+        client = {
+          id: `client-${crypto.randomUUID()}`,
+          nit: normalizedNit,
+          name: normalizedNit === '' ? 'Particular' : `Convenio ${normalizedNit}`,
+          phone: normalizedNit === '' ? '' : first.destinatarioTelefono,
+        };
         clients.push(client);
       }
 
@@ -566,7 +574,7 @@ export const mockApiClient: ApiClient = {
   async updateDistributionCenter(id, input: UpdateDistributionCenterInput) {
     await delay();
     const cedi = distributionCentersStore.find((c) => c.id === id);
-    if (!cedi) throw new ApiError(`CEDI no encontrado: ${id}`, 'ENTITY_NOT_FOUND', 404);
+    if (!cedi) throw new ApiError(`Droguería no encontrada: ${id}`, 'ENTITY_NOT_FOUND', 404);
 
     if (input.name !== undefined) cedi.name = input.name;
     if (input.city !== undefined) cedi.city = input.city;
@@ -593,7 +601,7 @@ export const mockApiClient: ApiClient = {
       throw new ApiError('Ya existe un usuario con ese correo', 'BUSINESS_LOGIC_ERROR', 422);
     }
     if (input.role !== 'ADMIN' && !input.distributionCenterId) {
-      throw new ApiError('Los usuarios CEDI y CONDUCTOR deben pertenecer a un CEDI', 'VALIDATION_ERROR', 422);
+      throw new ApiError('Los usuarios de droguería y los conductores deben pertenecer a una droguería', 'VALIDATION_ERROR', 422);
     }
 
     const now = new Date().toISOString();

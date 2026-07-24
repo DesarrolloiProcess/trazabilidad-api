@@ -251,7 +251,7 @@ app.post('/api/txt-import', auth, requireRole('ADMIN', 'CEDI'), (req, res) => {
     return apiError(
       res,
       422,
-      req.user.role === 'ADMIN' ? 'Selecciona el CEDI destino de esta planilla' : 'El usuario que importa la planilla debe pertenecer a un CEDI',
+      req.user.role === 'ADMIN' ? 'Selecciona la droguería de origen de esta planilla' : 'El usuario que importa la planilla debe pertenecer a una droguería',
       'BUSINESS_LOGIC_ERROR',
     );
   }
@@ -290,9 +290,17 @@ app.post('/api/txt-import', auth, requireRole('ADMIN', 'CEDI'), (req, res) => {
     const groupRows = grouped.get(trackingNumber);
     const [first] = groupRows;
 
-    let client = clientsStore.find((c) => c.nit === first.clienteNit);
+    // clienteNit identifica al convenio/EPS que paga, no al paciente (eso es destinatarioNombre, usado en
+    // recipientName) — sin NIT, todas las entregas particulares comparten un cliente "Particular".
+    const normalizedNit = (first.clienteNit || '').trim();
+    let client = clientsStore.find((c) => c.nit === normalizedNit);
     if (!client) {
-      client = { id: newId('client'), nit: first.clienteNit, name: first.destinatarioNombre, phone: first.destinatarioTelefono };
+      client = {
+        id: newId('client'),
+        nit: normalizedNit,
+        name: normalizedNit === '' ? 'Particular' : `Convenio ${normalizedNit}`,
+        phone: normalizedNit === '' ? '' : first.destinatarioTelefono,
+      };
       clientsStore.push(client);
     }
 
@@ -536,7 +544,7 @@ app.post('/api/distribution-centers', auth, requireRole('ADMIN'), (req, res) => 
 
 app.patch('/api/distribution-centers/:id', auth, requireRole('ADMIN'), (req, res) => {
   const cedi = distributionCentersStore.find((c) => c.id === req.params.id);
-  if (!cedi) return apiError(res, 404, `CEDI no encontrado: ${req.params.id}`, 'ENTITY_NOT_FOUND');
+  if (!cedi) return apiError(res, 404, `Droguería no encontrada: ${req.params.id}`, 'ENTITY_NOT_FOUND');
 
   const { name, city, address, active } = req.body ?? {};
   if (name !== undefined) cedi.name = name;
@@ -562,7 +570,7 @@ app.post('/api/users', auth, requireRole('ADMIN'), (req, res) => {
     return apiError(res, 422, 'Ya existe un usuario con ese correo', 'BUSINESS_LOGIC_ERROR');
   }
   if (role !== 'ADMIN' && !distributionCenterId) {
-    return apiError(res, 422, 'Los usuarios CEDI y CONDUCTOR deben pertenecer a un CEDI', 'VALIDATION_ERROR');
+    return apiError(res, 422, 'Los usuarios de droguería y los conductores deben pertenecer a una droguería', 'VALIDATION_ERROR');
   }
 
   const now = new Date().toISOString();

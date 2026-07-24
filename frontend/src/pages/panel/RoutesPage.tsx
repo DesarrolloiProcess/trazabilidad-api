@@ -72,7 +72,7 @@ export function RoutesPage() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
                   <th className="px-5 py-3 font-medium">Ruta</th>
-                  <th className="px-5 py-3 font-medium">CEDI</th>
+                  <th className="px-5 py-3 font-medium">Droguería</th>
                   <th className="px-5 py-3 font-medium">Fecha</th>
                   <th className="px-5 py-3 font-medium">Conductor</th>
                   <th className="px-5 py-3 font-medium">Estado</th>

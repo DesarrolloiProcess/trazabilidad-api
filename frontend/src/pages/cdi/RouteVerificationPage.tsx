@@ -53,7 +53,7 @@ export function RouteVerificationPage() {
 
   if (routeQuery.isLoading || deliveriesQuery.isLoading) {
     return (
-      <ConductorLayout title="Verificar planilla" brandLabel="FarmaTrack CEDI">
+      <ConductorLayout title="Verificar planilla" brandLabel="FarmaTrack Droguería">
         <SealLoader label="Cargando planilla…" />
       </ConductorLayout>
     );
@@ -61,7 +61,7 @@ export function RouteVerificationPage() {
 
   if (routeQuery.isError || deliveriesQuery.isError || !routeQuery.data) {
     return (
-      <ConductorLayout title="Verificar planilla" brandLabel="FarmaTrack CEDI">
+      <ConductorLayout title="Verificar planilla" brandLabel="FarmaTrack Droguería">
         <ErrorBanner
           message={
             routeQuery.error instanceof ApiError ? routeQuery.error.message : 'No pudimos cargar esta planilla.'
@@ -78,7 +78,7 @@ export function RouteVerificationPage() {
     <ConductorLayout
       title={`Planilla ${routeQuery.data.code}`}
       subtitle={`${pending.length} ${pending.length === 1 ? 'entrega' : 'entregas'} por verificar`}
-      brandLabel="FarmaTrack CEDI"
+      brandLabel="FarmaTrack Droguería"
     >
       {verifyMutation.isError && (
         <div className="mb-4">

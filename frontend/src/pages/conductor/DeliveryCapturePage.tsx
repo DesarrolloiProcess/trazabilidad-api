@@ -138,13 +138,13 @@ export function DeliveryCapturePage() {
 
       {delivery.status === 'creado' && (
         <div className="rounded-xl border border-slate-200 bg-white p-5 text-center">
-          <p className="text-sm text-slate-500">Esta entrega todavía no ha sido alistada por el CEDI.</p>
+          <p className="text-sm text-slate-500">Esta entrega todavía no ha sido alistada por la droguería.</p>
         </div>
       )}
 
       {delivery.status === 'alistado' && (
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-600">El CEDI ya alistó este pedido. Confirma que lo recibiste para iniciar el transporte.</p>
+          <p className="text-sm text-slate-600">La droguería ya alistó este pedido. Confirma que lo recibiste para iniciar el transporte.</p>
           <Button className="mt-4 w-full" size="lg" isLoading={receiveMutation.isPending} onClick={() => receiveMutation.mutate()}>
             Recibir para transporte
           </Button>
@@ -154,7 +154,7 @@ export function DeliveryCapturePage() {
       {delivery.status === 'entregado_transportador' && !showNotDelivered && (
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-navy">Firma del destinatario</p>
+            <p className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-navy">Firma de quien recibe</p>
             <SignaturePad onChange={setSignatureUrl} />
           </div>
 
@@ -268,7 +268,7 @@ export function DeliveryCapturePage() {
             {delivery.receiverName} · {delivery.deliveredAt && new Date(delivery.deliveredAt).toLocaleTimeString('es-CO')}
           </p>
           <div className="mt-3 rounded-lg border-l-4 border-dispensed bg-dispensed/5 px-3 py-2 text-left text-xs text-navy/80">
-            El acta de entrega quedó lista para facturación. Notificación automática enviada por WhatsApp al destinatario.
+            El acta de entrega quedó lista para facturación. Notificación automática enviada por WhatsApp al paciente.
           </div>
           <Button variant="secondary" className="mt-4 w-full" isLoading={generatingPdf} onClick={handleDownloadActa}>
             Descargar acta de entrega

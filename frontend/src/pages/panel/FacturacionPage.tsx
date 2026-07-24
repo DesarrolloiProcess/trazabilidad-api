@@ -76,7 +76,7 @@ export function FacturacionPage() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
                   <th className="px-5 py-3 font-medium">Guía</th>
-                  <th className="px-5 py-3 font-medium">Destinatario</th>
+                  <th className="px-5 py-3 font-medium">Paciente</th>
                   <th className="px-5 py-3 font-medium">Total</th>
                   <th className="px-5 py-3 font-medium">{tab === 'pendientes' ? 'Habilitado desde' : 'Facturado'}</th>
                   <th className="px-5 py-3 font-medium">Estado</th>

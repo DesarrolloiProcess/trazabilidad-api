@@ -59,17 +59,17 @@ export function ConfiguracionPage() {
     <PanelLayout>
       <div className="border-b border-slate-200 bg-white px-8 py-6">
         <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Configuración</h1>
-        <p className="mt-1 text-sm text-slate-500">Datos de los CEDIs y preferencias de la plataforma</p>
+        <p className="mt-1 text-sm text-slate-500">Datos de las droguerías y preferencias de la plataforma</p>
       </div>
 
       <div className="p-8 space-y-6">
         <div className="max-w-md rounded-xl border border-slate-200 bg-white p-5">
-          <p className="font-display text-sm font-bold uppercase tracking-wide text-navy">Editar CEDI</p>
+          <p className="font-display text-sm font-bold uppercase tracking-wide text-navy">Editar droguería</p>
 
-          {centersQuery.isError && <ErrorBanner message="No pudimos cargar los CEDIs." />}
+          {centersQuery.isError && <ErrorBanner message="No pudimos cargar las droguerías." />}
 
           {centersQuery.isLoading ? (
-            <SealLoader label="Cargando CEDIs…" />
+            <SealLoader label="Cargando droguerías…" />
           ) : (
             <form
               onSubmit={(e) => {
@@ -79,7 +79,7 @@ export function ConfiguracionPage() {
               className="mt-4 space-y-4"
             >
               <div>
-                <label className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">CEDI</label>
+                <label className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">Droguería</label>
                 <select
                   value={selectedCediId}
                   onChange={(e) => setSelectedCediId(e.target.value)}
@@ -98,7 +98,7 @@ export function ConfiguracionPage() {
               <TextField label="Dirección" value={address} onChange={(e) => setAddress(e.target.value)} />
 
               {updateMutation.isSuccess && (
-                <p className="text-sm font-medium text-dispensed">CEDI actualizado correctamente.</p>
+                <p className="text-sm font-medium text-dispensed">Droguería actualizada correctamente.</p>
               )}
               {updateMutation.isError && (
                 <ErrorBanner message={updateMutation.error instanceof ApiError ? updateMutation.error.message : 'No pudimos guardar los cambios.'} />

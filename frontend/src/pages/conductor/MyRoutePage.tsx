@@ -48,7 +48,7 @@ export function MyRoutePage() {
       {routesQuery.isLoading ? (
         <SealLoader label="Buscando tu ruta…" />
       ) : !activeRoute ? (
-        <EmptyState title="Sin ruta asignada" description="Todavía no tienes una ruta activa para hoy. Contacta a tu CEDI." />
+        <EmptyState title="Sin ruta asignada" description="Todavía no tienes una ruta activa para hoy. Contacta a tu droguería." />
       ) : (
         <>
           <div className="mb-5 grid grid-cols-3 gap-3">

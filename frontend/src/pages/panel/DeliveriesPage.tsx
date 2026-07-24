@@ -100,7 +100,7 @@ export function DeliveriesPage() {
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
                       <th className="px-5 py-3 font-medium">Guía</th>
-                      <th className="px-5 py-3 font-medium">Destinatario</th>
+                      <th className="px-5 py-3 font-medium">Paciente</th>
                       <th className="px-5 py-3 font-medium">Dirección</th>
                       <th className="px-5 py-3 font-medium">Estado</th>
                       <th className="px-5 py-3 font-medium">Último movimiento</th>

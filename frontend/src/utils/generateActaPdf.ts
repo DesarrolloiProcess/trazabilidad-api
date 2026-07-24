@@ -127,8 +127,8 @@ export async function generateActaPdf(data: ActaData): Promise<void> {
 
   let y = 44;
 
-  // ── Datos de la guía y destinatario ─────────────────────────────────────
-  sectionLabel(doc, 'Datos de la guía y destinatario', MARGIN_X, y);
+  // ── Datos de la guía y el paciente ─────────────────────────────────────
+  sectionLabel(doc, 'Datos de la guía y el paciente', MARGIN_X, y);
 
   // Sello de estado (mismo lenguaje visual que <StatusSeal> en el panel).
   const stampLabel = 'ENTREGADO';
@@ -165,7 +165,7 @@ export async function generateActaPdf(data: ActaData): Promise<void> {
     doc.text(value, x, y + 5);
   };
 
-  addField('Destinatario', data.recipientName, rowX1Label);
+  addField('Paciente', data.recipientName, rowX1Label);
   if (data.deliveredAt) {
     addField('Fecha y hora de entrega', new Date(data.deliveredAt).toLocaleString('es-CO'), col2X, true);
   }
@@ -314,7 +314,7 @@ export async function generateActaPdf(data: ActaData): Promise<void> {
     doc.roundedRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4, 2, 2, 'S');
     doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
     bodyFont(doc, 6.5, GRIS_PIZARRA);
-    doc.text('Verifica en el Portal Cliente', qrX + qrSize / 2, qrY + qrSize + 6, { align: 'center' });
+    doc.text('Verifica en el portal de seguimiento', qrX + qrSize / 2, qrY + qrSize + 6, { align: 'center' });
     monoFont(doc, 7, true);
     doc.text(data.trackingNumber, qrX + qrSize / 2, qrY + qrSize + 10, { align: 'center' });
   } catch {

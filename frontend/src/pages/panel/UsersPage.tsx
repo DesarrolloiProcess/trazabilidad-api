@@ -13,14 +13,14 @@ import { ApiError, type Role, type UserDto } from '#src/api/types';
 
 const ROLE_LABEL: Record<Role, string> = {
   ADMIN: 'Administrador',
-  CEDI: 'CEDI',
+  CEDI: 'Droguería',
   CONDUCTOR: 'Conductor',
 };
 
 const ROLE_FILTERS = [
   { value: 'ALL', label: 'Todos' },
   { value: 'ADMIN', label: 'Administradores' },
-  { value: 'CEDI', label: 'CEDI' },
+  { value: 'CEDI', label: 'Droguería' },
   { value: 'CONDUCTOR', label: 'Conductores' },
 ] as const;
 
@@ -59,7 +59,7 @@ export function UsersPage() {
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Usuarios</h1>
-          <p className="mt-1 text-sm text-slate-500">Cuentas de acceso a FarmaTrack (Portal Web, App Conductor, CEDI)</p>
+          <p className="mt-1 text-sm text-slate-500">Cuentas de acceso a FarmaTrack (Portal Web, App Conductor, Droguería)</p>
         </div>
         <Button onClick={() => setDialogUser('new')}>Nuevo usuario</Button>
       </div>
@@ -95,7 +95,7 @@ export function UsersPage() {
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Correo</th>
                   <th className="px-4 py-3">Rol</th>
-                  <th className="px-4 py-3">CEDI</th>
+                  <th className="px-4 py-3">Droguería</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -236,20 +236,20 @@ function UserFormDialog({ user, open, onOpenChange }: UserFormDialogProps) {
                 className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-navy"
               >
                 <option value="ADMIN">Administrador</option>
-                <option value="CEDI">CEDI</option>
+                <option value="CEDI">Droguería</option>
                 <option value="CONDUCTOR">Conductor</option>
               </select>
             </div>
 
             {requiresCenter && (
               <div>
-                <label className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">CEDI</label>
+                <label className="mb-1.5 block font-display text-xs font-semibold uppercase tracking-wide text-navy">Droguería</label>
                 <select
                   value={distributionCenterId}
                   onChange={(e) => setDistributionCenterId(e.target.value)}
                   className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-navy"
                 >
-                  <option value="">Selecciona un CEDI…</option>
+                  <option value="">Selecciona una droguería…</option>
                   {centersQuery.data?.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}

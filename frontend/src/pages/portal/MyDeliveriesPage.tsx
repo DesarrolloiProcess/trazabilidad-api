@@ -38,8 +38,10 @@ export function MyDeliveriesPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <p className="font-display text-lg font-bold text-navy">{query.data.client.name}</p>
-              <p className="text-xs text-slate-400">NIT {query.data.client.nit}</p>
+              <p className="font-display text-lg font-bold text-navy">
+                {query.data.deliveries[0]?.recipientName ?? 'Tus pedidos'}
+              </p>
+              <p className="text-xs text-slate-400">{query.data.client.name}</p>
             </div>
             <button
               onClick={() => {

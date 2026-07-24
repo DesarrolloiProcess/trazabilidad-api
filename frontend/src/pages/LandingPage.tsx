@@ -25,7 +25,7 @@ export function LandingPage() {
           className="rounded-xl border border-white/10 bg-white/5 p-6 text-left transition-colors hover:border-cold hover:bg-white/10"
         >
           <p className="font-display text-lg font-semibold">Acceso interno</p>
-          <p className="mt-1.5 text-sm text-white/60">CEDI, administración y conductores</p>
+          <p className="mt-1.5 text-sm text-white/60">Droguería, administración y conductores</p>
         </Link>
         <Link
           to="/portal"
