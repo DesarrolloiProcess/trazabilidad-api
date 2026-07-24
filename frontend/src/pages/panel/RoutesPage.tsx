@@ -90,7 +90,7 @@ export function RoutesPage() {
                       <td className="px-5 py-3 text-slate-500">{new Date(route.date).toLocaleDateString('es-CO')}</td>
                       <td className="px-5 py-3">
                         {route.driverId ? (
-                          driversQuery.data?.find((d) => d.id === route.driverId)?.name ?? route.driverId
+                          driversQuery.data?.find((d) => d.id === route.driverId)?.name ?? '—'
                         ) : (
                           <select
                             defaultValue=""

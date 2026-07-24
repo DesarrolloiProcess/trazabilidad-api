@@ -180,6 +180,7 @@ export const clients: MockClient[] = [
   { id: 'client-7', nit: '900789012', name: 'Coosalud EPS', phone: '' },
   { id: 'client-8', nit: '900890123', name: 'Aliansalud EPS', phone: '' },
   { id: 'client-particular', nit: '', name: 'Particular', phone: '' },
+  { id: 'client-intermedica', nit: '900901234', name: 'Inter Médica', phone: '' },
 ];
 
 export const routes: RouteDto[] = [
@@ -259,6 +260,8 @@ interface DeliverySeed {
   deliveredAt: string | null;
   observation?: string;
   invoiced?: boolean;
+  /** Timestamp de creación — por defecto ayer 6am; se puede fijar explícitamente para casos de demo puntuales. */
+  createdAt?: string;
   /** Coordenadas del destino (simula geocodificación al importar) — separadas de la geo capturada como evidencia. */
   destination: { lat: number; lng: number };
   evidence?: {
@@ -506,6 +509,20 @@ const seeds: DeliverySeed[] = [
     deliveredAt: null,
     destination: { lat: 4.685, lng: -74.055 },
   },
+  {
+    id: 'del-00303',
+    routeId: 'route-r017',
+    clientId: 'client-intermedica',
+    trackingNumber: 'FARMA-00303',
+    address: 'Cra 24 # 63-18, Apto 703, Bogotá',
+    recipientName: 'Roberto Salazar Vanegas',
+    recipientPhone: '3213344556',
+    status: 'creado',
+    products: [{ code: 'MED-3305', description: 'Warfarina 5mg x30', quantity: 1, price: 6900 }],
+    deliveredAt: null,
+    createdAt: iso(0, 10, 0),
+    destination: { lat: 4.6486, lng: -74.0721 },
+  },
 ];
 
 export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
@@ -530,8 +547,8 @@ export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
   deliveredAt: seed.deliveredAt,
   invoiced: seed.invoiced ?? false,
   invoicedAt: seed.invoiced ? seed.deliveredAt : null,
-  createdAt: iso(-1, 6),
-  updatedAt: seed.deliveredAt ?? iso(-1, 6),
+  createdAt: seed.createdAt ?? iso(-1, 6),
+  updatedAt: seed.deliveredAt ?? seed.createdAt ?? iso(-1, 6),
 }));
 
 export function findClientById(clientId: string): MockClient {

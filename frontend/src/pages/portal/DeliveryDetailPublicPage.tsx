@@ -8,6 +8,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { Button } from '#src/components/ui/Button';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
+import { DeliveryMap } from '#src/components/map/DeliveryMap';
 import { ApiError } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 import { getPortalSession } from '#src/pages/portal/portalSession';
@@ -121,6 +122,18 @@ export function DeliveryDetailPublicPage() {
               )}
             </div>
           </div>
+
+          {query.data.status === 'entregado_cliente' && query.data.latitude != null && query.data.longitude != null && (
+            <div className="mt-5 border-t border-slate-100 pt-5">
+              <p className="mb-3 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Ubicación de la entrega
+              </p>
+              <DeliveryMap
+                destination={{ lat: query.data.latitude, lng: query.data.longitude }}
+                destinationLabel="Entregado aquí"
+              />
+            </div>
+          )}
 
           {query.data.status === 'entregado_cliente' && (query.data.signatureUrl || query.data.photoUrl) && (
             <div className="mt-5 border-t border-slate-100 pt-5">

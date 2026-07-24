@@ -8,6 +8,7 @@ import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { Button } from '#src/components/ui/Button';
 import { StatusSeal } from '#src/components/status/StatusSeal';
 import { DELIVERY_STATUS_LABEL, DELIVERY_STATUS_TONE } from '#src/components/status/statusConfig';
+import { DeliveryMap } from '#src/components/map/DeliveryMap';
 import { ApiError } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 import { generateActaPdf } from '#src/utils/generateActaPdf';
@@ -94,6 +95,21 @@ export function DeliveryDetailPage() {
                     </li>
                   ))}
                 </ul>
+              </section>
+
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <p className="mb-3 border-b border-slate-100 pb-2 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Ubicación
+                </p>
+                <DeliveryMap
+                  destination={{ lat: query.data.destinationLatitude ?? NaN, lng: query.data.destinationLongitude ?? NaN }}
+                  destinationLabel={query.data.address}
+                  evidence={
+                    query.data.latitude != null && query.data.longitude != null
+                      ? { lat: query.data.latitude, lng: query.data.longitude }
+                      : undefined
+                  }
+                />
               </section>
 
               {query.data.status === 'entregado_cliente' && (
