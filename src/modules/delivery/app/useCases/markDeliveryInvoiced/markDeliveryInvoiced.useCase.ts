@@ -23,7 +23,7 @@ export class MarkDeliveryInvoicedUseCase {
     if (command.authUser.role === Role.CEDI) {
       const route = await this.routeRepository.getById(current.routeId);
       if (!route || route.distributionCenterId !== command.authUser.distributionCenterId) {
-        throw new ForbiddenError('No puedes facturar entregas de otro CEDI');
+        throw new ForbiddenError('No puedes facturar entregas de otra droguería');
       }
     }
 

@@ -21,9 +21,9 @@ export class AssignDriverUseCase {
       throw new EntityNotFoundError('Ruta', command.id);
     }
 
-    // El CEDI solo puede asignar conductores dentro de su propia sede.
+    // El usuario CEDI (rol interno) solo puede asignar conductores dentro de su propia droguería.
     if (command.authUser.role === Role.CEDI && route.distributionCenterId !== command.authUser.distributionCenterId) {
-      throw new ForbiddenError('No puedes asignar conductores en rutas de otro CEDI');
+      throw new ForbiddenError('No puedes asignar conductores en rutas de otra droguería');
     }
 
     const driver = await this.userRepository.getById(command.driverId);
@@ -33,7 +33,7 @@ export class AssignDriverUseCase {
     }
 
     if (command.authUser.role === Role.CEDI && driver.distributionCenterId !== command.authUser.distributionCenterId) {
-      throw new BusinessLogicError('El conductor debe pertenecer a tu mismo CEDI');
+      throw new BusinessLogicError('El conductor debe pertenecer a tu misma droguería');
     }
 
     const updated = route.assignDriver(command.driverId, command.authUser.id);

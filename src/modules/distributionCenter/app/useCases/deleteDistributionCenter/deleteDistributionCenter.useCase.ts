@@ -10,7 +10,7 @@ export class DeleteDistributionCenterUseCase {
     const current = await this.repository.getById(command.id);
 
     if (!current) {
-      throw new EntityNotFoundError('CEDI', command.id);
+      throw new EntityNotFoundError('Droguería', command.id);
     }
 
     await this.repository.delete(command.id, { tx: transaction });
