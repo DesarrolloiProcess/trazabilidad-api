@@ -1,0 +1,1 @@
+ALTER TABLE `routes` MODIFY COLUMN `status` enum('creada','asignada','entregada_transportador','en_curso','completada','con_novedad') NOT NULL DEFAULT 'creada';

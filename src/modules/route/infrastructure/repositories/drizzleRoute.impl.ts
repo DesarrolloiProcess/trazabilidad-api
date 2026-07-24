@@ -33,6 +33,10 @@ function buildFilters(query: IRouteQuery): SQL | undefined {
     conditions.push(eq(routes.driver_id, query.driverId));
   }
 
+  if (query.code) {
+    conditions.push(eq(routes.code, query.code));
+  }
+
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
@@ -60,6 +64,11 @@ export class DrizzleRouteImpl implements IRouteRepository {
 
   async getById(id: string): Promise<Route | null> {
     const [row] = await drizzleOrm().select().from(routes).where(eq(routes.id, id)).limit(1);
+    return row ? toEntity(row) : null;
+  }
+
+  async getByCode(code: string): Promise<Route | null> {
+    const [row] = await drizzleOrm().select().from(routes).where(eq(routes.code, code)).limit(1);
     return row ? toEntity(row) : null;
   }
 

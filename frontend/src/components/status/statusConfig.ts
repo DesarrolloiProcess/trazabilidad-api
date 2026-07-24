@@ -37,6 +37,7 @@ export const DELIVERY_STATUS_TONE: Record<DeliveryStatus, SealTone> = {
 
 export const ROUTE_STATUS_LABEL: Record<RouteStatus, string> = {
   creada: 'Creada',
+  asignada: 'Asignada',
   entregada_transportador: 'Entregada a transportador',
   en_curso: 'En curso',
   completada: 'Completada',
@@ -45,6 +46,7 @@ export const ROUTE_STATUS_LABEL: Record<RouteStatus, string> = {
 
 export const ROUTE_STATUS_TONE: Record<RouteStatus, SealTone> = {
   creada: 'neutral',
+  asignada: 'cold',
   entregada_transportador: 'cold',
   en_curso: 'thermal',
   completada: 'dispensed',

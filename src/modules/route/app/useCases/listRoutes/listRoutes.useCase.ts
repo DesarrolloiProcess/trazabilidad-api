@@ -23,6 +23,7 @@ export class ListRoutesUseCase {
       limit: command.limit,
       distributionCenterId,
       driverId,
+      code: command.code,
     });
   }
 }

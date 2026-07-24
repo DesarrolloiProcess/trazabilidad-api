@@ -15,6 +15,20 @@
       "when": 1784330908338,
       "tag": "0001_groovy_ravenous",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1784933045026,
+      "tag": "0002_square_famine",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1784934465638,
+      "tag": "0003_flawless_expediter",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { IsInt, Min, Max, IsOptional, IsUUID } from 'class-validator';
+import { IsInt, Min, Max, IsOptional, IsUUID, IsString } from 'class-validator';
 import { AuthenticatedCommand } from '#src/shared/commands/authenticatedCommand.js';
 
 export class ListRoutesCommand extends AuthenticatedCommand {
@@ -18,4 +18,8 @@ export class ListRoutesCommand extends AuthenticatedCommand {
   @IsOptional()
   @IsUUID()
   driverId?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
 }

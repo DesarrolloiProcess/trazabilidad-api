@@ -10,7 +10,8 @@ import { ApiError, type RouteDto, type RouteStatus } from '#src/api/types';
 import { LIVE_POLL_INTERVAL } from '#src/api/pollInterval';
 
 const ROUTE_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
-  creada: ['entregada_transportador'],
+  creada: ['asignada'],
+  asignada: ['entregada_transportador'],
   entregada_transportador: ['en_curso'],
   en_curso: ['completada', 'con_novedad'],
   completada: [],

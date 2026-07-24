@@ -1,0 +1,1 @@
+ALTER TABLE `routes` ADD CONSTRAINT `routes_code_unique_idx` UNIQUE(`code`);

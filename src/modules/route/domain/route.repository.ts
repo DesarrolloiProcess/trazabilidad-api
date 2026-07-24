@@ -6,11 +6,13 @@ export interface IRouteQuery {
   limit: number;
   distributionCenterId?: string;
   driverId?: string;
+  code?: string;
 }
 
 export interface IRouteRepository {
   getMany(query: IRouteQuery): Promise<{ data: Route[]; total: number }>;
   getById(id: string): Promise<Route | null>;
+  getByCode(code: string): Promise<Route | null>;
   create(entity: Route, config?: { tx?: ITransaction }): Promise<Route>;
   update(entity: Route, config?: { tx?: ITransaction }): Promise<Route>;
 }

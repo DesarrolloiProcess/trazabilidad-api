@@ -35,7 +35,8 @@ const passwordStore = new Map<string, string>(usersStore.map((u) => [u.id, DEFAU
 const otpStore = new Map<string, { code: string; expiresAt: number }>();
 
 const ROUTE_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
-  creada: ['entregada_transportador'],
+  creada: ['asignada'],
+  asignada: ['entregada_transportador'],
   entregada_transportador: ['en_curso'],
   en_curso: ['completada', 'con_novedad'],
   completada: [],
@@ -398,6 +399,7 @@ export const mockApiClient: ApiClient = {
     }
 
     route.driverId = driverId;
+    route.status = 'asignada';
     route.updatedAt = new Date().toISOString();
     return route;
   },

@@ -58,6 +58,7 @@ export class ImportTxtPlanillaUseCase {
     const now = new Date();
 
     await this.validateTrackingNumbersAreNew(rows.map(({ row }) => row.trackingNumber));
+    await this.validateRouteCodeIsNew(firstRow.routeCode);
 
     const route = new Route({
       id: this.uuidHandle.uuid(),
@@ -197,6 +198,14 @@ export class ImportTxtPlanillaUseCase {
       throw new ValidationError(
         `El(los) número(s) de guía ya existen en el sistema: ${duplicates.join(', ')}`,
       );
+    }
+  }
+
+  private async validateRouteCodeIsNew(routeCode: string): Promise<void> {
+    const existing = await this.routeRepository.getByCode(routeCode);
+
+    if (existing) {
+      throw new ValidationError(`Ya existe una ruta con el código '${routeCode}'. Usa un código distinto para esta planilla.`);
     }
   }
 

@@ -1,9 +1,10 @@
 import { BusinessLogicError } from '#src/shared/Errors/businessLogicError.js';
 
-export type RouteStatus = 'creada' | 'entregada_transportador' | 'en_curso' | 'completada' | 'con_novedad';
+export type RouteStatus = 'creada' | 'asignada' | 'entregada_transportador' | 'en_curso' | 'completada' | 'con_novedad';
 
 const ALLOWED_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
-  creada: ['entregada_transportador'],
+  creada: ['asignada'],
+  asignada: ['entregada_transportador'],
   entregada_transportador: ['en_curso'],
   en_curso: ['completada', 'con_novedad'],
   completada: [],
@@ -63,6 +64,10 @@ export class Route {
       throw new BusinessLogicError('La ruta ya tiene un conductor asignado');
     }
 
-    return new Route({ ...this, driverId, updatedAt: new Date(), updatedBy });
+    if (!ALLOWED_TRANSITIONS[this.status].includes('asignada')) {
+      throw new BusinessLogicError(`No se puede asignar un conductor a una ruta en estado '${this.status}'`);
+    }
+
+    return new Route({ ...this, driverId, status: 'asignada', updatedAt: new Date(), updatedBy });
   }
 }

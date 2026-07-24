@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ConductorLayout } from '#src/layouts/ConductorLayout';
@@ -16,16 +17,48 @@ const TERMINAL_ROUTE_STATUSES = new Set(['completada', 'con_novedad']);
 export function MyRoutePage() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [manualRouteId, setManualRouteId] = useState<string | null>(null);
+  const [codeInput, setCodeInput] = useState('');
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
 
   const routesQuery = useQuery({
     queryKey: ['routes', 'driver', user?.id],
-    queryFn: () => apiClient.listRoutes({ driverId: user!.id, page: 1, limit: 5 }),
+    queryFn: () => apiClient.listRoutes({ driverId: user!.id, page: 1, limit: 20 }),
     enabled: Boolean(user),
     refetchInterval: LIVE_POLL_INTERVAL,
   });
 
   const routesData = routesQuery.data?.data;
-  const activeRoute = routesData?.find((route) => !TERMINAL_ROUTE_STATUSES.has(route.status)) ?? routesData?.[0];
+  // La ruta vigente es la asignacion mas reciente sin cerrar (no completada/con_novedad),
+  // no la de fecha mas reciente en la planilla — esa fecha la define quien preparo el TXT
+  // y no siempre coincide con cuando el conductor recibio la ruta de verdad.
+  const defaultRoute = [...(routesData ?? [])]
+    .filter((route) => !TERMINAL_ROUTE_STATUSES.has(route.status))
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0] ?? routesData?.[0];
+  const manualRoute = manualRouteId ? routesData?.find((r) => r.id === manualRouteId) : undefined;
+  const activeRoute = manualRoute ?? defaultRoute;
+
+  const handleSwitchRoute = async () => {
+    const code = codeInput.trim();
+    if (!code || !user) return;
+    setSwitching(true);
+    setSwitchError(null);
+    try {
+      const result = await apiClient.listRoutes({ driverId: user.id, code, page: 1, limit: 1 });
+      const found = result.data[0];
+      if (!found) {
+        setSwitchError('Esa ruta no existe o no está asignada a ti.');
+        return;
+      }
+      setManualRouteId(found.id);
+      setCodeInput('');
+    } catch (err) {
+      setSwitchError(err instanceof ApiError ? err.message : 'No pudimos buscar esa ruta.');
+    } finally {
+      setSwitching(false);
+    }
+  };
 
   const deliveriesQuery = useQuery({
     queryKey: ['deliveries', 'route', activeRoute?.id],
@@ -44,6 +77,32 @@ export function MyRoutePage() {
       {routesQuery.isError && (
         <ErrorBanner message={routesQuery.error instanceof ApiError ? routesQuery.error.message : 'No pudimos cargar tu ruta.'} />
       )}
+
+      <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5">
+        <p className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-navy">Cambiar de ruta</p>
+        <div className="flex gap-2">
+          <input
+            value={codeInput}
+            onChange={(e) => setCodeInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSwitchRoute()}
+            placeholder="Ej: R-021"
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono"
+          />
+          <Button size="md" isLoading={switching} onClick={handleSwitchRoute}>
+            Ver
+          </Button>
+        </div>
+        {switchError && <p className="mt-1.5 text-xs font-medium text-controlled">{switchError}</p>}
+        {manualRouteId && (
+          <button
+            type="button"
+            onClick={() => setManualRouteId(null)}
+            className="mt-2 text-xs font-semibold text-cold hover:underline"
+          >
+            ← Volver a mi ruta actual
+          </button>
+        )}
+      </div>
 
       {routesQuery.isLoading ? (
         <SealLoader label="Buscando tu ruta…" />

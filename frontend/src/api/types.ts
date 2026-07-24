@@ -7,7 +7,7 @@ export type DeliveryStatus =
   | 'entregado_cliente'
   | 'no_entregado';
 
-export type RouteStatus = 'creada' | 'entregada_transportador' | 'en_curso' | 'completada' | 'con_novedad';
+export type RouteStatus = 'creada' | 'asignada' | 'entregada_transportador' | 'en_curso' | 'completada' | 'con_novedad';
 
 export interface UserDto {
   id: string;

@@ -14,12 +14,13 @@ export const listRoutesSchema = z.object({
   query: paginationSchema.extend({
     distributionCenterId: uuidSchema.optional(),
     driverId: uuidSchema.optional(),
+    code: z.string().min(1).max(50).optional(),
   }),
 });
 
 export const updateRouteStatusSchema = z.object({
   body: z.object({
-    status: z.enum(['creada', 'entregada_transportador', 'en_curso', 'completada', 'con_novedad']),
+    status: z.enum(['creada', 'asignada', 'entregada_transportador', 'en_curso', 'completada', 'con_novedad']),
   }),
   params: z.object({ id: uuidSchema }),
   query: z.object({}),
