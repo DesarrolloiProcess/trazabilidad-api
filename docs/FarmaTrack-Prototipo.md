@@ -2,8 +2,10 @@
 
 **Entregable de presentación** · Frontend desplegado en producción, contra un backend real (mínimo, en memoria) con los mismos contratos del backend hexagonal definitivo.
 
-**🔗 Demo en vivo:** **https://farmatrack-iprocess.vercel.app**
-**🔗 API del demo:** https://farmatrack-demo-server.onrender.com (el servidor gratuito de Render "duerme" tras inactividad — el primer request puede tardar ~30s en despertar)
+**🔗 Demo en vivo:** **https://farmatrack.syncip.co**
+**🔗 API en producción:** backend real (MySQL) desplegado en Railway, ya conectado — el `demo-server` mencionado más abajo quedó obsoleto y no se usa en esta URL.
+
+> ⚠️ Este documento describe una iteración anterior del prototipo (backend mock en memoria, terminología "CEDI"). El sistema en `https://farmatrack.syncip.co` ya corre contra el backend real y usa el modelo droguería → paciente. Se deja como referencia histórica de decisiones de diseño; no reflejar sus URLs ni su terminología como estado actual.
 
 ---
 
@@ -193,7 +195,7 @@ Se verificó con 3 navegadores simultáneos (Portal Web ADMIN + App CDI + App Co
 
 ## Cómo correr el prototipo
 
-**En producción:** https://farmatrack-iprocess.vercel.app (recomendado — así se ve el mock compartido entre dispositivos)
+**En producción:** https://farmatrack.syncip.co (backend real, no el mock descrito en esta sección)
 
 **En local:**
 ```bash
