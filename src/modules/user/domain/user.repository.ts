@@ -6,6 +6,7 @@ export interface IUserQuery {
   page: number;
   limit: number;
   role?: Role;
+  distributionCenterId?: string;
 }
 
 export interface IUserRepository {

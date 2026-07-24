@@ -1,4 +1,4 @@
-import { eq, count } from 'drizzle-orm';
+import { eq, and, count } from 'drizzle-orm';
 import { drizzleOrm } from '#src/shared/lib/drizzle/connection.js';
 import { users } from '#src/shared/lib/drizzle/models/user.schema.js';
 import { User } from '#src/modules/user/domain/user.entity.js';
@@ -29,7 +29,11 @@ function toEntity(row: UserRow): User {
 export class DrizzleUserImpl implements IUserRepository {
   async getMany(query: IUserQuery): Promise<{ data: User[]; total: number }> {
     const offset = (query.page - 1) * query.limit;
-    const filters = query.role ? eq(users.role, query.role) : undefined;
+    const conditions = [
+      query.role ? eq(users.role, query.role) : undefined,
+      query.distributionCenterId ? eq(users.distribution_center_id, query.distributionCenterId) : undefined,
+    ].filter((c) => c !== undefined);
+    const filters = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [rows, [{ total }]] = await Promise.all([
       drizzleOrm().select().from(users).where(filters).limit(query.limit).offset(offset),

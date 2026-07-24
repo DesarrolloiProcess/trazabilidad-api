@@ -38,7 +38,7 @@ router.post(
   changePasswordCtrl.run,
 );
 
-router.get('/', checkAuth.run([Role.ADMIN]), schemaValidation(listUsersSchema), listUsersCtrl.run);
+router.get('/', checkAuth.run([Role.ADMIN, Role.CEDI]), schemaValidation(listUsersSchema), listUsersCtrl.run);
 router.get('/:id', checkAuth.run([Role.ADMIN]), schemaValidation(getUserByIdSchema), getUserByIdCtrl.run);
 router.post('/', checkAuth.run([Role.ADMIN]), schemaValidation(createUserSchema), createUserCtrl.run);
 router.patch('/:id', checkAuth.run([Role.ADMIN]), schemaValidation(updateUserSchema), updateUserCtrl.run);
