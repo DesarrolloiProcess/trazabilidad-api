@@ -24,17 +24,22 @@ Cubre 4 experiencias, desplegadas públicamente y compartiendo datos en tiempo r
 
 ## 2. Flujo de una entrega
 
+**Estado de la entrega** (por guía):
 ```
 Creado ────────(droguería verifica cantidades/contenido)───────▶ Alistado
-Alistado ──────(se asigna un conductor a la ruta)───────────────▶ Alistado + conductor asignado
 Alistado ──────(conductor confirma "Recibir para transporte")──▶ Entregado a transportador
 Entregado a transportador ──(firma + foto + receptor + geo)────▶ Entregado al paciente ──▶ Habilita facturación
 Entregado a transportador ──(conductor marca no entregado)─────▶ No entregado
 ```
 
-- La planilla llega al sistema en estado **Creado** (importación manual desde el Portal Web).
+**Estado de la ruta** (el conjunto de guías que un conductor transporta junta):
+```
+Creada ──(se asigna un conductor)──▶ Asignada ──(conductor recibe la mercancía)──▶ Entregada a transportador ──▶ En curso ──▶ Completada / Con novedad
+```
+
+- La planilla llega al sistema en estado **Creado** (importación manual desde el Portal Web, con un código de ruta único).
 - La **droguería de origen** verifica desde su app móvil que el contenido físico coincide con lo declarado — cada punto de la planilla debe marcarse antes de habilitar la confirmación. Al verificar, la entrega pasa a **Alistado**.
-- Desde el Portal Web se **asigna un conductor** a la ruta — cada droguería solo ve y asigna conductores de su propia sede.
+- Desde el Portal Web se **asigna un conductor** a la ruta — cada droguería solo ve y asigna conductores de su propia sede, y la ruta pasa automáticamente a estado **Asignada**.
 - El conductor confirma que recibió la mercancía para transporte, y en el domicilio del paciente captura **firma, foto de soporte, nombre y cédula de quien recibe, y geolocalización real** del punto de entrega.
 - Al confirmarse la entrega, el pedido queda **habilitado para facturación** con el timestamp exacto, y se genera automáticamente el acta de entrega descargable en PDF.
 - Si el conductor no puede completar la entrega, la marca como **No entregado** con una observación obligatoria.
@@ -82,7 +87,7 @@ Entregado a transportador ──(conductor marca no entregado)─────▶
 
 ### App del Conductor
 
-**13. Mi ruta de hoy**
+**13. Mi ruta de hoy** — muestra automáticamente la ruta vigente (la última asignada al conductor), con un buscador para cambiar a otra ruta propia por código si lo necesita
 ![Mi ruta](screenshots/10-conductor-mi-ruta.png)
 
 **14. Captura de entrega** — recibir para transporte, luego firma, foto, datos de quien recibe y geolocalización real
@@ -110,7 +115,9 @@ La firma se captura con un lienzo real (no una imagen genérica), la foto usa la
 | Login unificado con redirección según rol (ADMIN / CEDI / CONDUCTOR) | ✅ |
 | Verificación de planilla en la droguería de origen (Creado → Alistado) | ✅ |
 | Selector de droguería de destino al importar planilla | ✅ |
-| Asignar conductor a una ruta, acotado a la propia droguería | ✅ |
+| Asignar conductor a una ruta (acotado a la propia droguería), avanza el estado a Asignada | ✅ |
+| Código de ruta único en todo el sistema (validado al importar) | ✅ |
+| Conductor ve automáticamente su ruta vigente, con buscador manual por código | ✅ |
 | Cambiar estado de ruta respetando las transiciones válidas | ✅ |
 | Captura real de firma, foto, receptor y geolocalización | ✅ |
 | Marcar entrega como no entregada, con observación obligatoria | ✅ |
@@ -157,7 +164,7 @@ Usuarios de prueba (contraseña `Farmatrack2026!` para todos):
 
 | Rol | Nombre | Correo | Droguería |
 |---|---|---|---|
-| ADMIN | Anamaría Ángel | `admin@iprocess.co` | Acceso completo |
+| ADMIN | Administrador | `admin@farmatrack.co` | Acceso completo |
 | CEDI | María Rodríguez | `maria.rodriguez@farmatrack.co` | Droguería Bogotá Norte |
 | CONDUCTOR | Carlos Peña | `carlos.pena@farmatrack.co` | Droguería Bogotá Norte |
 | CONDUCTOR | — | `conductor.medellin@test.com` | Droguería Medellín |
