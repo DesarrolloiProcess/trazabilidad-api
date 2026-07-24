@@ -42,7 +42,16 @@ export class DrizzleRouteImpl implements IRouteRepository {
     const filters = buildFilters(query);
 
     const [rows, [{ total }]] = await Promise.all([
-      drizzleOrm().select().from(routes).where(filters).orderBy(desc(routes.date)).limit(query.limit).offset(offset),
+      drizzleOrm()
+        .select()
+        .from(routes)
+        .where(filters)
+        // Empate por fecha (ej. un conductor con varias rutas del mismo dia) se
+        // resuelve por creacion mas reciente, para que el orden sea predecible
+        // en vez de depender del orden fisico/indice de MySQL.
+        .orderBy(desc(routes.date), desc(routes.created_at))
+        .limit(query.limit)
+        .offset(offset),
       drizzleOrm().select({ total: count() }).from(routes).where(filters),
     ]);
 

@@ -164,6 +164,13 @@ export function DeliveryDetailPage() {
               </p>
               <StatusSeal label={DELIVERY_STATUS_LABEL[query.data.status]} tone={DELIVERY_STATUS_TONE[query.data.status]} size="lg" />
 
+              {query.data.status !== 'creado' && (
+                <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                  <span aria-hidden="true">📱</span>
+                  Pre-alerta enviada al paciente por WhatsApp
+                </div>
+              )}
+
               {query.data.status === 'entregado_cliente' && query.data.deliveredAt && (
                 <div className="mt-3 rounded-lg border-l-4 border-dispensed bg-dispensed/5 px-3 py-2.5">
                   <p className="text-sm font-semibold text-dispensed">✅ Habilitado para facturación</p>

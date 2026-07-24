@@ -30,12 +30,16 @@ export function FacturacionPage() {
     <PanelLayout>
       <div className="border-b border-slate-200 bg-white px-8 py-6">
         <h1 className="font-display text-2xl font-bold tracking-tight text-navy">Facturación</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Vista de solo lectura: entregas confirmadas y su estado frente al sistema de facturación del cliente
-        </p>
+        <p className="mt-1 text-sm text-slate-500">Vista de solo lectura: entregas confirmadas y su estado frente a facturación</p>
       </div>
 
       <div className="p-8">
+        <div className="mb-4 rounded-lg border-l-4 border-cold bg-cold/5 px-3.5 py-2.5 text-xs text-navy/70">
+          El valor mostrado corresponde al medicamento entregado. Si el paciente tiene EPS o convenio, la factura completa
+          se dirige a la EPS y el paciente solo asume un copago — ese proceso de facturación con la EPS es independiente de
+          este sistema por ahora.
+        </div>
+
         {query.isError && (
           <ErrorBanner message={query.error instanceof ApiError ? query.error.message : 'No pudimos cargar las entregas.'} />
         )}
@@ -77,7 +81,7 @@ export function FacturacionPage() {
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
                   <th className="px-5 py-3 font-medium">Guía</th>
                   <th className="px-5 py-3 font-medium">Paciente</th>
-                  <th className="px-5 py-3 font-medium">Total</th>
+                  <th className="px-5 py-3 font-medium">Valor del pedido</th>
                   <th className="px-5 py-3 font-medium">{tab === 'pendientes' ? 'Habilitado desde' : 'Facturado'}</th>
                   <th className="px-5 py-3 font-medium">Estado</th>
                 </tr>

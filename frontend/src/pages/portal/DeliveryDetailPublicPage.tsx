@@ -109,6 +109,12 @@ export function DeliveryDetailPublicPage() {
               <div className="rounded-lg border-l-4 border-cold bg-cold/5 px-3.5 py-3 text-sm text-navy/80">
                 {STATUS_EVIDENCE_COPY[query.data.status]}
               </div>
+              {query.data.status !== 'creado' && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                  <span aria-hidden="true">📱</span>
+                  Te enviamos una pre-alerta por WhatsApp con el estado de tu pedido
+                </p>
+              )}
               {query.data.deliveredAt && (
                 <p className="mt-2 text-xs text-slate-400">{new Date(query.data.deliveredAt).toLocaleString('es-CO')}</p>
               )}
