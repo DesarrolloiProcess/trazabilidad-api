@@ -1,12 +1,27 @@
-import { and, eq, gte, lte, count, inArray, type SQL } from 'drizzle-orm';
-import { drizzleOrm } from '#src/shared/lib/drizzle/connection.js';
+import { and, eq, asc, gte, lte, count, inArray, type SQL } from 'drizzle-orm';
+import { drizzleOrm, type Database } from '#src/shared/lib/drizzle/connection.js';
 import { deliveries } from '#src/shared/lib/drizzle/models/delivery.schema.js';
 import { deliveryProducts } from '#src/shared/lib/drizzle/models/deliveryProduct.schema.js';
+import { deliveryStatusHistory } from '#src/shared/lib/drizzle/models/deliveryStatusHistory.schema.js';
 import { routes } from '#src/shared/lib/drizzle/models/route.schema.js';
 import { uuidHandle } from '#src/shared/helpers/uuidHandle/infrastructure/dependencies.js';
 import { Delivery, type IDeliveryProduct } from '#src/modules/delivery/domain/delivery.entity.js';
-import type { IDeliveryQuery, IDeliveryRepository } from '#src/modules/delivery/domain/delivery.repository.js';
+import type { IDeliveryQuery, IDeliveryRepository, IDeliveryStatusHistoryEntry } from '#src/modules/delivery/domain/delivery.repository.js';
 import type { ITransaction } from '#src/shared/helpers/transactions/domain/transaction.js';
+
+async function recordStatusHistory(
+  executor: Database | ITransaction,
+  deliveryId: string,
+  status: Delivery['status'],
+  changedAt: Date,
+): Promise<void> {
+  await executor.insert(deliveryStatusHistory).values({
+    id: uuidHandle.uuid(),
+    delivery_id: deliveryId,
+    status,
+    changed_at: changedAt,
+  });
+}
 
 type DeliveryRow = typeof deliveries.$inferSelect;
 type DeliveryProductRow = typeof deliveryProducts.$inferSelect;
@@ -183,11 +198,19 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       );
     }
 
+    await recordStatusHistory(executor, entity.id, entity.status, entity.createdAt);
+
     return entity;
   }
 
   async update(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery> {
     const executor = config?.tx ?? drizzleOrm();
+
+    const [before] = await executor
+      .select({ status: deliveries.status })
+      .from(deliveries)
+      .where(eq(deliveries.id, entity.id))
+      .limit(1);
 
     await executor
       .update(deliveries)
@@ -207,6 +230,22 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       })
       .where(eq(deliveries.id, entity.id));
 
+    // Solo se registra un cambio de estado real (evita un renglon duplicado cuando
+    // update() se llama solo para marcar facturada u otro campo que no es el status).
+    if (before && before.status !== entity.status) {
+      await recordStatusHistory(executor, entity.id, entity.status, entity.updatedAt);
+    }
+
     return entity;
+  }
+
+  async getStatusHistory(deliveryId: string): Promise<IDeliveryStatusHistoryEntry[]> {
+    const rows = await drizzleOrm()
+      .select({ status: deliveryStatusHistory.status, changed_at: deliveryStatusHistory.changed_at })
+      .from(deliveryStatusHistory)
+      .where(eq(deliveryStatusHistory.delivery_id, deliveryId))
+      .orderBy(asc(deliveryStatusHistory.changed_at));
+
+    return rows.map((row) => ({ status: row.status, changedAt: row.changed_at }));
   }
 }

@@ -67,6 +67,12 @@ export interface DeliveryDto {
   invoicedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  statusHistory: DeliveryStatusHistoryEntry[];
+}
+
+export interface DeliveryStatusHistoryEntry {
+  status: DeliveryStatus;
+  changedAt: string;
 }
 
 export interface RouteDto {

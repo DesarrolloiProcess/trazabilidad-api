@@ -1,5 +1,10 @@
 import type { ITransaction } from '#src/shared/helpers/transactions/domain/transaction.js';
-import type { Delivery } from '#src/modules/delivery/domain/delivery.entity.js';
+import type { Delivery, DeliveryStatus } from '#src/modules/delivery/domain/delivery.entity.js';
+
+export interface IDeliveryStatusHistoryEntry {
+  status: DeliveryStatus;
+  changedAt: Date;
+}
 
 export interface IDeliveryQuery {
   page: number;
@@ -15,6 +20,7 @@ export interface IDeliveryRepository {
   getByTrackingNumber(trackingNumber: string): Promise<Delivery | null>;
   getManyByClientId(clientId: string): Promise<Delivery[]>;
   getConfirmedInWindow(from: Date, to: Date): Promise<Delivery[]>;
+  getStatusHistory(deliveryId: string): Promise<IDeliveryStatusHistoryEntry[]>;
   create(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery>;
   update(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery>;
 }

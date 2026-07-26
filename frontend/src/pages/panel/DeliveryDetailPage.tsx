@@ -228,6 +228,31 @@ export function DeliveryDetailPage() {
                   </div>
                 )}
               </dl>
+
+              {query.data.statusHistory.length > 0 && (
+                <div className="mt-5 border-t border-slate-100 pt-4">
+                  <p className="mb-3 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">Línea de tiempo</p>
+                  <ol className="space-y-3">
+                    {query.data.statusHistory.map((entry, index) => (
+                      <li key={`${entry.status}-${entry.changedAt}`} className="flex gap-3">
+                        <div className="flex flex-col items-center">
+                          <span
+                            className={`seal h-2.5 w-2.5 shrink-0 ${
+                              index === query.data.statusHistory.length - 1 ? 'bg-cold' : 'bg-slate-300'
+                            }`}
+                            aria-hidden="true"
+                          />
+                          {index < query.data.statusHistory.length - 1 && <span className="mt-1 w-px flex-1 bg-slate-200" />}
+                        </div>
+                        <div className="pb-1">
+                          <p className="text-sm font-medium text-navy">{DELIVERY_STATUS_LABEL[entry.status]}</p>
+                          <p className="text-xs text-slate-400">{new Date(entry.changedAt).toLocaleString('es-CO')}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </aside>
           </div>
         ) : null}

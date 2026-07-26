@@ -2,9 +2,14 @@ import { EntityNotFoundError } from '#src/shared/Errors/entityNotFoundError.js';
 import { ForbiddenError } from '#src/shared/Errors/forbiddenError.js';
 import { Role } from '#src/shared/constant/roles.constant.js';
 import type { Delivery } from '#src/modules/delivery/domain/delivery.entity.js';
-import type { IDeliveryRepository } from '#src/modules/delivery/domain/delivery.repository.js';
+import type { IDeliveryRepository, IDeliveryStatusHistoryEntry } from '#src/modules/delivery/domain/delivery.repository.js';
 import type { IRouteRepository } from '#src/modules/route/domain/route.repository.js';
 import type { GetDeliveryByIdCommand } from '#src/modules/delivery/app/useCases/getDeliveryById/getDeliveryById.command.js';
+
+export interface GetDeliveryByIdResult {
+  delivery: Delivery;
+  statusHistory: IDeliveryStatusHistoryEntry[];
+}
 
 export class GetDeliveryByIdUseCase {
   constructor(
@@ -12,7 +17,7 @@ export class GetDeliveryByIdUseCase {
     private readonly routeRepository: IRouteRepository,
   ) {}
 
-  async run(command: GetDeliveryByIdCommand): Promise<Delivery> {
+  async run(command: GetDeliveryByIdCommand): Promise<GetDeliveryByIdResult> {
     const entity = await this.repository.getById(command.id);
 
     if (!entity) {
@@ -26,6 +31,8 @@ export class GetDeliveryByIdUseCase {
       }
     }
 
-    return entity;
+    const statusHistory = await this.repository.getStatusHistory(entity.id);
+
+    return { delivery: entity, statusHistory };
   }
 }

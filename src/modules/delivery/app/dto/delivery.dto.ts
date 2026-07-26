@@ -1,4 +1,14 @@
 import type { Delivery, DeliveryStatus, IDeliveryProduct } from '#src/modules/delivery/domain/delivery.entity.js';
+import type { IDeliveryStatusHistoryEntry } from '#src/modules/delivery/domain/delivery.repository.js';
+
+export interface DeliveryStatusHistoryDto {
+  status: DeliveryStatus;
+  changedAt: Date;
+}
+
+export function toDeliveryStatusHistoryDto(entries: IDeliveryStatusHistoryEntry[]): DeliveryStatusHistoryDto[] {
+  return entries.map((entry) => ({ status: entry.status, changedAt: entry.changedAt }));
+}
 
 export interface DeliveryDto {
   id: string;
