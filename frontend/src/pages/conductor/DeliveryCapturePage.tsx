@@ -82,6 +82,10 @@ export function DeliveryCapturePage() {
         longitude: query.data.longitude,
         signatureUrl: query.data.signatureUrl,
         photoUrl: query.data.photoUrl,
+        createdAt: query.data.createdAt,
+        alistamientoStartedAt: query.data.alistamientoStartedAt,
+        alistamientoEndedAt: query.data.alistamientoEndedAt,
+        verifierSignatureUrl: query.data.verifierSignatureUrl,
       });
     } catch {
       setPdfError('No pudimos generar el acta de entrega. Intenta nuevamente.');

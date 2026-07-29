@@ -4,15 +4,19 @@ import { transactionHandle } from '#src/shared/helpers/transactions/infrastructu
 
 import { ListPendingVerificationUseCase } from '#src/modules/cdi/app/useCases/listPendingVerification/listPendingVerification.useCase.js';
 import { VerifyRouteUseCase } from '#src/modules/cdi/app/useCases/verifyRoute/verifyRoute.useCase.js';
+import { IniciarAlistamientoUseCase } from '#src/modules/cdi/app/useCases/iniciarAlistamiento/iniciarAlistamiento.useCase.js';
 
 import { ListPendingVerificationCtrl } from '#src/modules/cdi/infrastructure/interface/api/controller/listPendingVerification.ctrl.js';
 import { VerifyRouteCtrl } from '#src/modules/cdi/infrastructure/interface/api/controller/verifyRoute.ctrl.js';
+import { IniciarAlistamientoCtrl } from '#src/modules/cdi/infrastructure/interface/api/controller/iniciarAlistamiento.ctrl.js';
 
 const routeRepository = new DrizzleRouteImpl();
 const deliveryRepository = new DrizzleDeliveryImpl();
 
 const listPendingVerificationUseCase = new ListPendingVerificationUseCase(routeRepository, deliveryRepository);
 const verifyRouteUseCase = new VerifyRouteUseCase(routeRepository, deliveryRepository, transactionHandle);
+const iniciarAlistamientoUseCase = new IniciarAlistamientoUseCase(routeRepository, deliveryRepository);
 
 export const listPendingVerificationCtrl = new ListPendingVerificationCtrl(listPendingVerificationUseCase);
 export const verifyRouteCtrl = new VerifyRouteCtrl(verifyRouteUseCase);
+export const iniciarAlistamientoCtrl = new IniciarAlistamientoCtrl(iniciarAlistamientoUseCase);

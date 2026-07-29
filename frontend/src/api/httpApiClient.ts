@@ -65,7 +65,9 @@ export const httpApiClient: ApiClient = {
 
   listPendingVerification: (distributionCenterId) =>
     request(`/api/cdi/pending-verification${toQuery({ distributionCenterId })}`),
-  verifyRoute: (routeId) => request(`/api/cdi/routes/${routeId}/verify`, { method: 'POST' }),
+  startRouteVerification: (routeId) => request(`/api/cdi/routes/${routeId}/start-verification`, { method: 'POST' }),
+  verifyRoute: (routeId, signatureUrl) =>
+    request(`/api/cdi/routes/${routeId}/verify`, { method: 'POST', body: JSON.stringify({ signatureUrl }) }),
 
   listDeliveries: (params: ListDeliveriesParams) => request(`/api/deliveries${toQuery(params)}`),
   getDeliveryById: (id) => request(`/api/deliveries/${id}`),

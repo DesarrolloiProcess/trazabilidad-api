@@ -48,6 +48,10 @@ export function DeliveryDetailPage() {
         longitude: query.data.longitude,
         signatureUrl: query.data.signatureUrl,
         photoUrl: query.data.photoUrl,
+        createdAt: query.data.createdAt,
+        alistamientoStartedAt: query.data.alistamientoStartedAt,
+        alistamientoEndedAt: query.data.alistamientoEndedAt,
+        verifierSignatureUrl: query.data.verifierSignatureUrl,
       });
     } catch {
       setPdfError('No pudimos generar el acta de entrega. Intenta nuevamente.');
@@ -233,24 +237,44 @@ export function DeliveryDetailPage() {
                 <div className="mt-5 border-t border-slate-100 pt-4">
                   <p className="mb-3 font-display text-xs font-semibold uppercase tracking-wide text-slate-400">Línea de tiempo</p>
                   <ol className="space-y-3">
-                    {query.data.statusHistory.map((entry, index) => (
-                      <li key={`${entry.status}-${entry.changedAt}`} className="flex gap-3">
-                        <div className="flex flex-col items-center">
-                          <span
-                            className={`seal h-2.5 w-2.5 shrink-0 ${
-                              index === query.data.statusHistory.length - 1 ? 'bg-cold' : 'bg-slate-300'
-                            }`}
-                            aria-hidden="true"
-                          />
-                          {index < query.data.statusHistory.length - 1 && <span className="mt-1 w-px flex-1 bg-slate-200" />}
-                        </div>
-                        <div className="pb-1">
-                          <p className="text-sm font-medium text-navy">{DELIVERY_STATUS_LABEL[entry.status]}</p>
-                          <p className="text-xs text-slate-400">{new Date(entry.changedAt).toLocaleString('es-CO')}</p>
-                        </div>
-                      </li>
-                    ))}
+                    {query.data.statusHistory.map((entry, index) => {
+                      const isLast = index === query.data!.statusHistory.length - 1;
+                      const isAlistado = entry.status === 'alistado';
+                      return (
+                        <li key={`${entry.status}-${entry.changedAt}`} className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={`seal h-2.5 w-2.5 shrink-0 ${isLast ? 'bg-cold' : 'bg-slate-300'}`}
+                              aria-hidden="true"
+                            />
+                            {!isLast && <span className="mt-1 w-px flex-1 bg-slate-200" />}
+                          </div>
+                          <div className="pb-1">
+                            {isAlistado && query.data!.alistamientoStartedAt && (
+                              <p className="text-xs text-slate-400">
+                                Inicio: {new Date(query.data!.alistamientoStartedAt).toLocaleString('es-CO')}
+                              </p>
+                            )}
+                            <p className="text-sm font-medium text-navy">
+                              {isAlistado ? 'Alistamiento verificado y planilla liberada' : DELIVERY_STATUS_LABEL[entry.status]}
+                            </p>
+                            <p className="text-xs text-slate-400">{new Date(entry.changedAt).toLocaleString('es-CO')}</p>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ol>
+                </div>
+              )}
+
+              {query.data.verifierSignatureUrl && (
+                <div className="mt-5 border-t border-slate-100 pt-4">
+                  <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">Firma de verificación (CDI)</p>
+                  <img
+                    src={query.data.verifierSignatureUrl}
+                    alt="Firma del verificador CDI"
+                    className="w-full rounded-lg border border-slate-200"
+                  />
                 </div>
               )}
             </aside>

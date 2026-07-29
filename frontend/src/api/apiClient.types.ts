@@ -56,8 +56,10 @@ export interface ApiClient {
 
   /** Rutas de un CEDI con al menos una entrega en estado 'creado' pendiente por verificar (perfil CDI móvil). */
   listPendingVerification(distributionCenterId: string): Promise<PendingVerificationDto[]>;
-  /** Verifica la planilla completa: avanza todas sus entregas 'creado' a 'alistado'. */
-  verifyRoute(routeId: string): Promise<DeliveryDto[]>;
+  /** Marca el inicio del alistamiento (llamada automática al abrir la planilla, no requiere acción del usuario). */
+  startRouteVerification(routeId: string): Promise<void>;
+  /** Verifica la planilla completa: avanza todas sus entregas 'creado' a 'alistado' y captura la firma del verificador. */
+  verifyRoute(routeId: string, signatureUrl: string): Promise<DeliveryDto[]>;
 
   listDeliveries(params: ListDeliveriesParams): Promise<PagedResult<DeliveryDto>>;
   getDeliveryById(id: string): Promise<DeliveryDto>;

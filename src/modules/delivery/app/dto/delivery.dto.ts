@@ -31,6 +31,9 @@ export interface DeliveryDto {
   deliveredAt: Date | null;
   invoiced: boolean;
   invoicedAt: Date | null;
+  alistamientoStartedAt: Date | null;
+  alistamientoEndedAt: Date | null;
+  verifierSignatureUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +60,9 @@ export function toDeliveryDto(entity: Delivery): DeliveryDto {
     deliveredAt: entity.deliveredAt,
     invoiced: entity.invoiced,
     invoicedAt: entity.invoicedAt,
+    alistamientoStartedAt: entity.alistamientoStartedAt,
+    alistamientoEndedAt: entity.alistamientoEndedAt,
+    verifierSignatureUrl: entity.verifierSignatureUrl,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
   };

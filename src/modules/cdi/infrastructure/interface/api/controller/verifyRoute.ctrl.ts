@@ -7,7 +7,11 @@ export class VerifyRouteCtrl {
 
   run = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const command = await VerifyRouteCommand.create({ id: req.params.id, authUser: req.user });
+      const command = await VerifyRouteCommand.create({
+        id: req.params.id,
+        signatureUrl: req.body.signatureUrl,
+        authUser: req.user,
+      });
       const result = await this.useCase.run(command);
       res.status(200).json(result);
     } catch (error) {

@@ -10,6 +10,14 @@ export const listPendingVerificationSchema = z.object({
 });
 
 export const verifyRouteSchema = z.object({
+  body: z.object({
+    signatureUrl: z.string().min(1),
+  }),
+  params: z.object({ id: uuidSchema }),
+  query: z.object({}),
+});
+
+export const startVerificationSchema = z.object({
   body: z.object({}),
   params: z.object({ id: uuidSchema }),
   query: z.object({}),

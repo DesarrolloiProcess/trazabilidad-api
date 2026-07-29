@@ -39,7 +39,7 @@ export class VerifyRouteUseCase {
       const results: Delivery[] = [];
 
       for (const delivery of pending) {
-        const advanced = delivery.avanzarEstado('alistado', command.authUser.id);
+        const advanced = delivery.verificarAlistamiento(command.signatureUrl, command.authUser.id);
         const saved = await this.deliveryRepository.update(advanced, { tx });
         results.push(saved);
       }

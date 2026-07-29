@@ -57,6 +57,10 @@ function toEntity(row: DeliveryRow, products: IDeliveryProduct[]): Delivery {
     deliveredAt: row.delivered_at,
     invoiced: row.invoiced,
     invoicedAt: row.invoiced_at,
+    alistamientoStartedAt: row.alistamiento_started_at,
+    alistamientoEndedAt: row.alistamiento_ended_at,
+    verifierSignatureUrl: row.verifier_signature_url,
+    verifiedBy: row.verified_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     createdBy: row.created_by,
@@ -181,6 +185,10 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       delivered_at: entity.deliveredAt,
       invoiced: entity.invoiced,
       invoiced_at: entity.invoicedAt,
+      alistamiento_started_at: entity.alistamientoStartedAt,
+      alistamiento_ended_at: entity.alistamientoEndedAt,
+      verifier_signature_url: entity.verifierSignatureUrl,
+      verified_by: entity.verifiedBy,
       created_by: entity.createdBy,
       updated_by: entity.updatedBy,
     });
@@ -228,6 +236,10 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
         delivered_at: entity.deliveredAt,
         invoiced: entity.invoiced,
         invoiced_at: entity.invoicedAt,
+        alistamiento_started_at: entity.alistamientoStartedAt,
+        alistamiento_ended_at: entity.alistamientoEndedAt,
+        verifier_signature_url: entity.verifierSignatureUrl,
+        verified_by: entity.verifiedBy,
         updated_by: entity.updatedBy,
       })
       .where(eq(deliveries.id, entity.id));

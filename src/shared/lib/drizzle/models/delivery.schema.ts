@@ -4,6 +4,7 @@ import { baseColumns } from './_shared/baseColumns.js';
 import { routes } from './route.schema.js';
 import { clients } from './client.schema.js';
 import { patients } from './patient.schema.js';
+import { users } from './user.schema.js';
 
 export const deliveryStatusValues = [
   'creado',
@@ -45,6 +46,12 @@ export const deliveries = mysqlTable(
     delivered_at: datetime('delivered_at'),
     invoiced: boolean('invoiced').notNull().default(false),
     invoiced_at: datetime('invoiced_at'),
+    /** Marca cuando el CDI abre la planilla para verificarla (hito de inicio del alistamiento) —
+     * distinta de created_at (creación de la guía) y de alistamiento_ended_at (fin/liberación). */
+    alistamiento_started_at: datetime('alistamiento_started_at'),
+    alistamiento_ended_at: datetime('alistamiento_ended_at'),
+    verifier_signature_url: longtext('verifier_signature_url'),
+    verified_by: customBuffer('verified_by').references(() => users.id),
     ...baseColumns,
   },
   (table) => ({

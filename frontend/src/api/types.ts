@@ -77,6 +77,9 @@ export interface DeliveryDto {
   deliveredAt: string | null;
   invoiced: boolean;
   invoicedAt: string | null;
+  alistamientoStartedAt: string | null;
+  alistamientoEndedAt: string | null;
+  verifierSignatureUrl: string | null;
   createdAt: string;
   updatedAt: string;
   statusHistory: DeliveryStatusHistoryEntry[];

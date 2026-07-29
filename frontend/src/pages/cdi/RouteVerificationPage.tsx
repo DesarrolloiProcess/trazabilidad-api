@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ConductorLayout } from '#src/layouts/ConductorLayout';
@@ -6,6 +6,7 @@ import { apiClient } from '#src/api/client';
 import { SealLoader } from '#src/components/ui/SealLoader';
 import { ErrorBanner } from '#src/components/ui/ErrorBanner';
 import { Button } from '#src/components/ui/Button';
+import { SignaturePad } from '#src/components/conductor/SignaturePad';
 import { ApiError } from '#src/api/types';
 
 export function RouteVerificationPage() {
@@ -13,6 +14,8 @@ export function RouteVerificationPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [reviewed, setReviewed] = useState<Set<string>>(new Set());
+  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
+  const startedRef = useRef<string | null>(null);
 
   const routeQuery = useQuery({
     queryKey: ['route', id],
@@ -31,8 +34,20 @@ export function RouteVerificationPage() {
     [deliveriesQuery.data],
   );
 
+  // Marca automáticamente el inicio del alistamiento la primera vez que el CDI abre esta
+  // planilla (hito de inicio para la trazabilidad completa) — no requiere acción del usuario
+  // y es seguro llamarlo más de una vez (el backend lo ignora si ya quedó marcado).
+  useEffect(() => {
+    if (!id || pending.length === 0 || startedRef.current === id) return;
+    startedRef.current = id;
+    apiClient.startRouteVerification(id).catch(() => {
+      // best-effort: si falla, el hito de inicio simplemente no queda registrado para esta
+      // planilla, pero no debe bloquear al CDI de verificar y confirmar.
+    });
+  }, [id, pending.length]);
+
   const verifyMutation = useMutation({
-    mutationFn: () => apiClient.verifyRoute(id!),
+    mutationFn: () => apiClient.verifyRoute(id!, signatureUrl!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cdi'] });
       queryClient.invalidateQueries({ queryKey: ['deliveries'] });
@@ -142,14 +157,27 @@ export function RouteVerificationPage() {
             })}
           </ul>
 
+          {allReviewed && (
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-3.5">
+              <p className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-navy">
+                Firma de quien verifica
+              </p>
+              <SignaturePad onChange={setSignatureUrl} />
+            </div>
+          )}
+
           <Button
             size="lg"
             className="mt-5 w-full"
-            disabled={!allReviewed}
+            disabled={!allReviewed || !signatureUrl}
             isLoading={verifyMutation.isPending}
             onClick={() => verifyMutation.mutate()}
           >
-            {allReviewed ? 'Confirmar planilla verificada' : `Verifica los ${pending.length - reviewed.size} puntos restantes`}
+            {!allReviewed
+              ? `Verifica los ${pending.length - reviewed.size} puntos restantes`
+              : !signatureUrl
+                ? 'Firma para confirmar'
+                : 'Confirmar planilla verificada'}
           </Button>
         </>
       )}

@@ -43,6 +43,13 @@
       "when": 1785294217260,
       "tag": "0005_illegal_sauron",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1785358547790,
+      "tag": "0006_rainy_boomer",
+      "breakpoints": true
     }
   ]
 }

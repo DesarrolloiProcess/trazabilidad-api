@@ -47,6 +47,10 @@ export interface IDelivery {
   deliveredAt: Date | null;
   invoiced: boolean;
   invoicedAt: Date | null;
+  alistamientoStartedAt: Date | null;
+  alistamientoEndedAt: Date | null;
+  verifierSignatureUrl: string | null;
+  verifiedBy: string | null;
   createdAt: Date;
   updatedAt: Date;
   createdBy: string | null;
@@ -74,6 +78,10 @@ export class Delivery {
   public readonly deliveredAt: Date | null;
   public readonly invoiced: boolean;
   public readonly invoicedAt: Date | null;
+  public readonly alistamientoStartedAt: Date | null;
+  public readonly alistamientoEndedAt: Date | null;
+  public readonly verifierSignatureUrl: string | null;
+  public readonly verifiedBy: string | null;
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
   public readonly createdBy: string | null;
@@ -100,6 +108,10 @@ export class Delivery {
     this.deliveredAt = props.deliveredAt;
     this.invoiced = props.invoiced;
     this.invoicedAt = props.invoicedAt;
+    this.alistamientoStartedAt = props.alistamientoStartedAt;
+    this.alistamientoEndedAt = props.alistamientoEndedAt;
+    this.verifierSignatureUrl = props.verifierSignatureUrl;
+    this.verifiedBy = props.verifiedBy;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.createdBy = props.createdBy;
@@ -118,6 +130,29 @@ export class Delivery {
     this.assertTransition(nuevoEstado);
 
     return new Delivery({ ...this, status: nuevoEstado, updatedAt: new Date(), updatedBy });
+  }
+
+  /** Marca el inicio del alistamiento (CDI abre la planilla) — no toca el estado ni se
+   * reescribe en visitas repetidas, así el hito de inicio queda fijo la primera vez. */
+  iniciarAlistamiento(updatedBy: string): Delivery {
+    if (this.alistamientoStartedAt) return this;
+
+    return new Delivery({ ...this, alistamientoStartedAt: new Date(), updatedAt: new Date(), updatedBy });
+  }
+
+  verificarAlistamiento(verifierSignatureUrl: string, updatedBy: string): Delivery {
+    this.assertTransition('alistado');
+    const now = new Date();
+
+    return new Delivery({
+      ...this,
+      status: 'alistado',
+      alistamientoEndedAt: now,
+      verifierSignatureUrl,
+      verifiedBy: updatedBy,
+      updatedAt: now,
+      updatedBy,
+    });
   }
 
   confirmarEntrega(data: IConfirmDeliveryData, updatedBy: string): Delivery {

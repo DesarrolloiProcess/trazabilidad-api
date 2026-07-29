@@ -20,6 +20,12 @@ export interface ActaData {
   longitude: number | null;
   signatureUrl: string | null;
   photoUrl: string | null;
+  /** Datos de la línea de tiempo completa (creación → alistamiento → entrega) — opcionales porque
+   * el portal público del paciente genera esta misma acta sin exponer datos internos de CDI. */
+  createdAt?: string;
+  alistamientoStartedAt?: string | null;
+  alistamientoEndedAt?: string | null;
+  verifierSignatureUrl?: string | null;
 }
 
 // Paleta de marca FarmaTrack × La Rebaja (misma fuente de verdad que tailwind.config.ts).
@@ -273,8 +279,60 @@ export async function generateActaPdf(data: ActaData): Promise<void> {
 
   y += 8;
 
+  // ── Línea de tiempo: trazabilidad completa (mínimo 4 hitos) ─────────────
+  if (data.createdAt) {
+    sectionLabel(doc, 'Línea de tiempo', MARGIN_X, y);
+    y += 6;
+
+    const milestones: Array<{ label: string; date: string | null | undefined }> = [
+      { label: 'Creación de la guía', date: data.createdAt },
+      { label: 'Inicio de alistamiento (CDI)', date: data.alistamientoStartedAt },
+      { label: 'Alistamiento verificado y planilla liberada', date: data.alistamientoEndedAt },
+      { label: 'Entrega al usuario final', date: data.deliveredAt },
+    ];
+
+    for (const milestone of milestones) {
+      bodyFont(doc, 9, NAVY);
+      doc.text(`•  ${milestone.label}`, MARGIN_X + 3, y);
+      monoFont(doc, 8.5, false, GRIS_PIZARRA);
+      doc.text(
+        milestone.date ? new Date(milestone.date).toLocaleString('es-CO') : 'No disponible',
+        PAGE_W - MARGIN_X,
+        y,
+        { align: 'right' },
+      );
+      y += 6;
+    }
+
+    y += 4;
+  }
+
   // ── Evidencia de entrega ────────────────────────────────────────────────
   const FOOTER_ZONE_TOP = PAGE_H - 40;
+
+  if (data.verifierSignatureUrl) {
+    sectionLabel(doc, 'Verificación CDI', MARGIN_X, y);
+    y += 10;
+
+    const verifierBoxW = 60;
+    const verifierBoxH = 32;
+    const verifierBoxY = Math.min(y, FOOTER_ZONE_TOP - verifierBoxH - 6);
+
+    bodyFont(doc, 7.5, GRIS_PIZARRA);
+    doc.text('FIRMA DE QUIEN VERIFICÓ', MARGIN_X, verifierBoxY - 2);
+    doc.setDrawColor(...BORDE);
+    doc.setLineWidth(0.35);
+    doc.roundedRect(MARGIN_X, verifierBoxY, verifierBoxW, verifierBoxH, 2, 2, 'S');
+    try {
+      const img = await toPngDataUrl(data.verifierSignatureUrl);
+      const fit = fitContain(img.width, img.height, MARGIN_X + 2, verifierBoxY + 2, verifierBoxW - 4, verifierBoxH - 4);
+      doc.addImage(img.dataUrl, 'PNG', fit.x, fit.y, fit.width, fit.height, undefined, 'FAST');
+    } catch {
+      // si la imagen no carga, el acta sigue siendo válida sin ella
+    }
+
+    y = verifierBoxY + verifierBoxH + 8;
+  }
 
   if (data.signatureUrl || data.photoUrl) {
     sectionLabel(doc, 'Evidencia de entrega', MARGIN_X, y);

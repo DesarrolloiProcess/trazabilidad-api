@@ -345,6 +345,9 @@ export const mockApiClient: ApiClient = {
         deliveredAt: null,
         invoiced: false,
         invoicedAt: null,
+        alistamientoStartedAt: null,
+        alistamientoEndedAt: null,
+        verifierSignatureUrl: null,
         createdAt: now,
         updatedAt: now,
         statusHistory: [{ status: 'creado', changedAt: now }],
@@ -441,7 +444,17 @@ export const mockApiClient: ApiClient = {
     return result;
   },
 
-  async verifyRoute(routeId) {
+  async startRouteVerification(routeId) {
+    await delay();
+    const now = new Date().toISOString();
+    for (const delivery of deliveriesStore) {
+      if (delivery.routeId === routeId && delivery.status === 'creado' && !delivery.alistamientoStartedAt) {
+        delivery.alistamientoStartedAt = now;
+      }
+    }
+  },
+
+  async verifyRoute(routeId, signatureUrl) {
     await delay(500, 1000);
     const route = routesStore.find((r) => r.id === routeId);
     if (!route) throw new ApiError(`Ruta no encontrada: ${routeId}`, 'ENTITY_NOT_FOUND', 404);
@@ -455,6 +468,8 @@ export const mockApiClient: ApiClient = {
     for (const delivery of pending) {
       delivery.status = 'alistado';
       delivery.updatedAt = now;
+      delivery.alistamientoEndedAt = now;
+      delivery.verifierSignatureUrl = signatureUrl;
       delivery.statusHistory.push({ status: 'alistado', changedAt: now });
     }
 
