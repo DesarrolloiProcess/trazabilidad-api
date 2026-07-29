@@ -9,6 +9,6 @@ export class TrackDeliveryCommand extends BaseCommand {
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(20)
+  @MaxLength(150)
   verificationValue!: string;
 }
