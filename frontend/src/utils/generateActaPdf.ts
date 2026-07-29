@@ -76,23 +76,39 @@ function sectionLabel(doc: jsPDF, text: string, x: number, y: number) {
  * offscreen para obtener un PNG real — funciona igual para fotos/firmas reales
  * capturadas por cámara o canvas (ya son PNG, el paso es un no-op en ese caso).
  */
-async function toPngDataUrl(dataUri: string): Promise<string> {
+interface RasterImage {
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+async function toPngDataUrl(dataUri: string): Promise<RasterImage> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
+      const width = img.naturalWidth || 320;
+      const height = img.naturalHeight || 220;
       const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth || 320;
-      canvas.height = img.naturalHeight || 220;
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
       if (!ctx) return reject(new Error('No se pudo preparar el lienzo para el PDF'));
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/png'));
+      resolve({ dataUrl: canvas.toDataURL('image/png'), width, height });
     };
     img.onerror = () => reject(new Error('No se pudo cargar la imagen para el PDF'));
     img.src = dataUri;
   });
+}
+
+/** Encaja una imagen dentro de una caja preservando su proporción original (equivalente a object-fit: contain) — nunca la deforma, deja espacio en blanco alrededor si no calza exacto. */
+function fitContain(imageW: number, imageH: number, boxX: number, boxY: number, boxW: number, boxH: number) {
+  const scale = Math.min(boxW / imageW, boxH / imageH);
+  const width = imageW * scale;
+  const height = imageH * scale;
+  return { width, height, x: boxX + (boxW - width) / 2, y: boxY + (boxH - height) / 2 };
 }
 
 export async function generateActaPdf(data: ActaData): Promise<void> {
@@ -275,8 +291,9 @@ export async function generateActaPdf(data: ActaData): Promise<void> {
       doc.setLineWidth(0.35);
       doc.roundedRect(MARGIN_X, boxY, boxW, boxH, 2, 2, 'S');
       try {
-        const png = await toPngDataUrl(data.signatureUrl);
-        doc.addImage(png, 'PNG', MARGIN_X + 2, boxY + 2, boxW - 4, boxH - 4, undefined, 'FAST');
+        const img = await toPngDataUrl(data.signatureUrl);
+        const fit = fitContain(img.width, img.height, MARGIN_X + 2, boxY + 2, boxW - 4, boxH - 4);
+        doc.addImage(img.dataUrl, 'PNG', fit.x, fit.y, fit.width, fit.height, undefined, 'FAST');
       } catch {
         // si la imagen no carga, el acta sigue siendo válida sin ella
       }
@@ -290,8 +307,9 @@ export async function generateActaPdf(data: ActaData): Promise<void> {
       doc.setLineWidth(0.35);
       doc.roundedRect(photoX, boxY, boxW, boxH, 2, 2, 'S');
       try {
-        const png = await toPngDataUrl(data.photoUrl);
-        doc.addImage(png, 'PNG', photoX + 2, boxY + 2, boxW - 4, boxH - 4, undefined, 'FAST');
+        const img = await toPngDataUrl(data.photoUrl);
+        const fit = fitContain(img.width, img.height, photoX + 2, boxY + 2, boxW - 4, boxH - 4);
+        doc.addImage(img.dataUrl, 'PNG', fit.x, fit.y, fit.width, fit.height, undefined, 'FAST');
       } catch {
         // idem
       }

@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { queryClient } from '#src/queryClient';
 import { RequireRole } from '#src/routes/RequireRole';
 
@@ -19,6 +19,14 @@ import { MiPerfilPage } from '#src/pages/panel/MiPerfilPage';
 
 import { MyRoutePage } from '#src/pages/conductor/MyRoutePage';
 import { DeliveryCapturePage } from '#src/pages/conductor/DeliveryCapturePage';
+
+// React Router no remonta el elemento de una ruta solo porque cambie el parametro :id —
+// sin esto, navegar de una entrega a otra reutiliza la instancia (y el estado local: firma,
+// foto, campos del formulario) de la entrega anterior en vez de partir en blanco.
+function KeyedDeliveryCapturePage() {
+  const { id } = useParams<{ id: string }>();
+  return <DeliveryCapturePage key={id} />;
+}
 
 import { CdiVerificationListPage } from '#src/pages/cdi/CdiVerificationListPage';
 import { RouteVerificationPage } from '#src/pages/cdi/RouteVerificationPage';
@@ -145,7 +153,7 @@ export function App() {
             path="/conductor/entregas/:id"
             element={
               <RequireRole roles={['ADMIN', 'CONDUCTOR']}>
-                <DeliveryCapturePage />
+                <KeyedDeliveryCapturePage />
               </RequireRole>
             }
           />
