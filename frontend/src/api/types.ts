@@ -35,6 +35,17 @@ export interface DistributionCenterDto {
   updatedAt: string;
 }
 
+export interface PatientDto {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  documentNumber: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DeliveryProduct {
   code: string;
   description: string;
@@ -50,6 +61,7 @@ export interface DeliveryDto {
   address: string;
   recipientName: string;
   recipientPhone: string;
+  patientId: string | null;
   products: DeliveryProduct[];
   status: DeliveryStatus;
   signatureUrl: string | null;
@@ -174,6 +186,21 @@ export interface UpdateDistributionCenterInput {
   name?: string;
   city?: string;
   address?: string;
+  active?: boolean;
+}
+
+export interface CreatePatientInput {
+  name: string;
+  phone?: string;
+  email?: string;
+  documentNumber?: string;
+}
+
+export interface UpdatePatientInput {
+  name?: string;
+  phone?: string;
+  email?: string;
+  documentNumber?: string;
   active?: boolean;
 }
 

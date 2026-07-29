@@ -3,6 +3,7 @@ import { customBuffer } from '../types/customBuffer.js';
 import { baseColumns } from './_shared/baseColumns.js';
 import { routes } from './route.schema.js';
 import { clients } from './client.schema.js';
+import { patients } from './patient.schema.js';
 
 export const deliveryStatusValues = [
   'creado',
@@ -26,6 +27,10 @@ export const deliveries = mysqlTable(
     address: varchar('address', { length: 255 }).notNull(),
     recipient_name: varchar('recipient_name', { length: 150 }).notNull(),
     recipient_phone: varchar('recipient_phone', { length: 20 }).notNull(),
+    /** Vincula la guía a un registro de paciente administrable — el nombre/teléfono de arriba se
+     * mantienen tal cual llegaron en la planilla (compatibilidad con el resto del sistema); si el
+     * ADMIN corrige el teléfono del paciente, se sincroniza aquí en cascada, no se reemplaza esta columna. */
+    patient_id: customBuffer('patient_id').references(() => patients.id),
     status: mysqlEnum('status', deliveryStatusValues).notNull().default('creado'),
     /** Coordenadas del destino (geocodificadas al importar), para ubicar la entrega en el mapa antes de que se confirme. */
     destination_latitude: decimal('destination_latitude', { precision: 10, scale: 7 }),
@@ -45,5 +50,6 @@ export const deliveries = mysqlTable(
   (table) => ({
     routeIdIdx: index('deliveries_route_id_idx').on(table.route_id),
     clientIdIdx: index('deliveries_client_id_idx').on(table.client_id),
+    patientIdIdx: index('deliveries_patient_id_idx').on(table.patient_id),
   }),
 );

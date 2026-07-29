@@ -5,6 +5,7 @@ import { routes } from './route.schema.js';
 import { deliveries } from './delivery.schema.js';
 import { deliveryProducts } from './deliveryProduct.schema.js';
 import { clients } from './client.schema.js';
+import { patients } from './patient.schema.js';
 
 export const usersRelations = relations(users, ({ one }) => ({
   distributionCenter: one(distributionCenters, {
@@ -33,6 +34,10 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   deliveries: many(deliveries),
 }));
 
+export const patientsRelations = relations(patients, ({ many }) => ({
+  deliveries: many(deliveries),
+}));
+
 export const deliveriesRelations = relations(deliveries, ({ one, many }) => ({
   route: one(routes, {
     fields: [deliveries.route_id],
@@ -41,6 +46,10 @@ export const deliveriesRelations = relations(deliveries, ({ one, many }) => ({
   client: one(clients, {
     fields: [deliveries.client_id],
     references: [clients.id],
+  }),
+  patient: one(patients, {
+    fields: [deliveries.patient_id],
+    references: [patients.id],
   }),
   products: many(deliveryProducts),
 }));

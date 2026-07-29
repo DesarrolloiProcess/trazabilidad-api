@@ -44,6 +44,7 @@ function toEntity(row: DeliveryRow, products: IDeliveryProduct[]): Delivery {
     address: row.address,
     recipientName: row.recipient_name,
     recipientPhone: row.recipient_phone,
+    patientId: row.patient_id,
     products,
     status: row.status,
     signatureUrl: row.signature_url,
@@ -168,6 +169,7 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       address: entity.address,
       recipient_name: entity.recipientName,
       recipient_phone: entity.recipientPhone,
+      patient_id: entity.patientId,
       status: entity.status,
       signature_url: entity.signatureUrl,
       photo_url: entity.photoUrl,
@@ -247,5 +249,11 @@ export class DrizzleDeliveryImpl implements IDeliveryRepository {
       .orderBy(asc(deliveryStatusHistory.changed_at));
 
     return rows.map((row) => ({ status: row.status, changedAt: row.changed_at }));
+  }
+
+  async updateRecipientPhoneByPatientId(patientId: string, phone: string, config?: { tx?: ITransaction }): Promise<void> {
+    const executor = config?.tx ?? drizzleOrm();
+
+    await executor.update(deliveries).set({ recipient_phone: phone }).where(eq(deliveries.patient_id, patientId));
   }
 }

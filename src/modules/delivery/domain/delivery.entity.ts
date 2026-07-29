@@ -34,6 +34,7 @@ export interface IDelivery {
   address: string;
   recipientName: string;
   recipientPhone: string;
+  patientId: string | null;
   products: IDeliveryProduct[];
   status: DeliveryStatus;
   signatureUrl: string | null;
@@ -60,6 +61,7 @@ export class Delivery {
   public readonly address: string;
   public readonly recipientName: string;
   public readonly recipientPhone: string;
+  public readonly patientId: string | null;
   public readonly products: IDeliveryProduct[];
   public readonly status: DeliveryStatus;
   public readonly signatureUrl: string | null;
@@ -85,6 +87,7 @@ export class Delivery {
     this.address = props.address;
     this.recipientName = props.recipientName;
     this.recipientPhone = props.recipientPhone;
+    this.patientId = props.patientId;
     this.products = props.products;
     this.status = props.status;
     this.signatureUrl = props.signatureUrl;

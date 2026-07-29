@@ -13,6 +13,7 @@ import { RoutesPage } from '#src/pages/panel/RoutesPage';
 import { DistributionCentersPage } from '#src/pages/panel/DistributionCentersPage';
 import { FacturacionPage } from '#src/pages/panel/FacturacionPage';
 import { UsersPage } from '#src/pages/panel/UsersPage';
+import { PatientsPage } from '#src/pages/panel/PatientsPage';
 import { ReportesPage } from '#src/pages/panel/ReportesPage';
 import { ConfiguracionPage } from '#src/pages/panel/ConfiguracionPage';
 import { MiPerfilPage } from '#src/pages/panel/MiPerfilPage';
@@ -96,6 +97,14 @@ export function App() {
             element={
               <RequireRole roles={['ADMIN']}>
                 <UsersPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/panel/pacientes"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <PatientsPage />
               </RequireRole>
             }
           />

@@ -18,6 +18,7 @@ export interface DeliveryDto {
   address: string;
   recipientName: string;
   recipientPhone: string;
+  patientId: string | null;
   products: IDeliveryProduct[];
   status: DeliveryStatus;
   signatureUrl: string | null;
@@ -43,6 +44,7 @@ export function toDeliveryDto(entity: Delivery): DeliveryDto {
     address: entity.address,
     recipientName: entity.recipientName,
     recipientPhone: entity.recipientPhone,
+    patientId: entity.patientId,
     products: entity.products,
     status: entity.status,
     signatureUrl: entity.signatureUrl,

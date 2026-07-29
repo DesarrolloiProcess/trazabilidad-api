@@ -11,6 +11,8 @@ import { Delivery, type IDeliveryProduct } from '#src/modules/delivery/domain/de
 import type { IDeliveryRepository } from '#src/modules/delivery/domain/delivery.repository.js';
 import { Client } from '#src/modules/client/domain/client.entity.js';
 import type { IClientRepository } from '#src/modules/client/domain/client.repository.js';
+import { Patient } from '#src/modules/patient/domain/patient.entity.js';
+import type { IPatientRepository } from '#src/modules/patient/domain/patient.repository.js';
 
 import { PLANILLA_TXT_CONFIG, toPlanillaRow, type IPlanillaRow } from '#src/modules/txtImport/domain/planilla.schema.js';
 import type { ImportTxtPlanillaCommand } from '#src/modules/txtImport/app/useCases/importTxtPlanilla/importTxtPlanilla.command.js';
@@ -26,6 +28,7 @@ export class ImportTxtPlanillaUseCase {
     private readonly routeRepository: IRouteRepository,
     private readonly deliveryRepository: IDeliveryRepository,
     private readonly clientRepository: IClientRepository,
+    private readonly patientRepository: IPatientRepository,
     private readonly txtParser: TxtParserService,
     private readonly uuidHandle: IUuidRepository,
     private readonly transactionHandle: ITransactionRepository,
@@ -76,6 +79,7 @@ export class ImportTxtPlanillaUseCase {
     const deliveriesByTracking = this.groupByTrackingNumber(rows);
     const trackingNumbers = [...deliveriesByTracking.keys()];
     const clientCache = new Map<string, Client>();
+    const patientCache = new Map<string, Patient>();
 
     await this.transactionHandle.buildTransaction(async (tx) => {
       await this.routeRepository.create(route, { tx });
@@ -89,6 +93,14 @@ export class ImportTxtPlanillaUseCase {
           firstGroupRow.destinatarioTelefono,
           command.authUser.id,
           clientCache,
+          tx,
+        );
+
+        const patient = await this.getOrCreatePatient(
+          firstGroupRow.destinatarioNombre,
+          firstGroupRow.destinatarioTelefono,
+          command.authUser.id,
+          patientCache,
           tx,
         );
 
@@ -107,6 +119,7 @@ export class ImportTxtPlanillaUseCase {
           address: firstGroupRow.direccion,
           recipientName: firstGroupRow.destinatarioNombre,
           recipientPhone: firstGroupRow.destinatarioTelefono,
+          patientId: patient.id,
           products,
           status: 'creado',
           signatureUrl: null,
@@ -179,6 +192,47 @@ export class ImportTxtPlanillaUseCase {
 
     const created = await this.clientRepository.create(client, { tx });
     cache.set(normalizedNit, created);
+    return created;
+  }
+
+  /**
+   * El telefono identifica al paciente entre planillas distintas (misma persona, varias guias en el
+   * tiempo) — si ya existe un paciente con ese telefono se reutiliza (y NO se sobreescribe su nombre,
+   * el ADMIN pudo haberlo corregido desde la pantalla de Pacientes), si no existe se crea uno nuevo.
+   */
+  private async getOrCreatePatient(
+    name: string,
+    phone: string,
+    authUserId: string,
+    cache: Map<string, Patient>,
+    tx: ITransaction,
+  ): Promise<Patient> {
+    const normalizedPhone = phone.trim();
+    const cached = cache.get(normalizedPhone);
+    if (cached) return cached;
+
+    const existing = await this.patientRepository.getByPhone(normalizedPhone);
+    if (existing) {
+      cache.set(normalizedPhone, existing);
+      return existing;
+    }
+
+    const now = new Date();
+    const patient = new Patient({
+      id: this.uuidHandle.uuid(),
+      name,
+      phone: normalizedPhone || null,
+      email: null,
+      documentNumber: null,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: authUserId,
+      updatedBy: authUserId,
+    });
+
+    const created = await this.patientRepository.create(patient, { tx });
+    cache.set(normalizedPhone, created);
     return created;
   }
 

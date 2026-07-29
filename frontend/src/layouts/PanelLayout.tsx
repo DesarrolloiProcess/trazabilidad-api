@@ -40,6 +40,7 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: '/panel/usuarios', label: 'Usuarios', roles: ['ADMIN'] },
       { to: '/panel/cedis', label: 'Droguerías', roles: ['ADMIN'] },
       { to: '/panel/usuarios?role=CONDUCTOR', label: 'Conductores', roles: ['ADMIN'] },
+      { to: '/panel/pacientes', label: 'Pacientes', roles: ['ADMIN'] },
     ],
   },
   { to: '/panel/reportes', label: 'Reportes', roles: ['ADMIN'] },

@@ -11,6 +11,9 @@ import type {
   LoginResultDto,
   MyDeliveriesDto,
   PagedResult,
+  PatientDto,
+  CreatePatientInput,
+  UpdatePatientInput,
   PendingVerificationDto,
   PublicDeliveryDto,
   RequestOtpResultDto,
@@ -20,7 +23,7 @@ import type {
   UpdateUserInput,
   UserDto,
 } from '#src/api/types';
-import { clients, deliveries, distributionCenters, routes, users } from '#src/api/mock/fixtures';
+import { clients, deliveries, distributionCenters, patients, routes, users } from '#src/api/mock/fixtures';
 import { delay } from '#src/api/mock/delay';
 import { getCurrentUser, setSession } from '#src/api/session';
 
@@ -30,6 +33,7 @@ const routesStore: RouteDto[] = [...routes];
 const deliveriesStore: DeliveryDto[] = [...deliveries];
 const usersStore: UserDto[] = [...users];
 const distributionCentersStore: DistributionCenterDto[] = [...distributionCenters];
+const patientsStore: PatientDto[] = [...patients];
 
 const passwordStore = new Map<string, string>(usersStore.map((u) => [u.id, DEFAULT_PASSWORD]));
 const otpStore = new Map<string, { code: string; expiresAt: number }>();
@@ -322,6 +326,7 @@ export const mockApiClient: ApiClient = {
         address: first.direccion,
         recipientName: first.destinatarioNombre,
         recipientPhone: first.destinatarioTelefono,
+        patientId: null,
         products: groupRows.map((r) => ({
           code: r.productoCodigo,
           description: r.productoDescripcion,
@@ -678,5 +683,55 @@ export const mockApiClient: ApiClient = {
     };
 
     return result;
+  },
+
+  async listPatients() {
+    await delay();
+    return [...patientsStore];
+  },
+
+  async createPatient(input: CreatePatientInput) {
+    await delay();
+    if (input.phone && patientsStore.some((p) => p.phone === input.phone)) {
+      throw new ApiError(`Ya existe un paciente registrado con el teléfono ${input.phone}`, 'BUSINESS_LOGIC_ERROR', 422);
+    }
+    const now = new Date().toISOString();
+    const patient: PatientDto = {
+      id: `patient-${crypto.randomUUID()}`,
+      name: input.name,
+      phone: input.phone ?? null,
+      email: input.email ?? null,
+      documentNumber: input.documentNumber ?? null,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+    patientsStore.unshift(patient);
+    return patient;
+  },
+
+  async updatePatient(id: string, input: UpdatePatientInput) {
+    await delay();
+    const patient = patientsStore.find((p) => p.id === id);
+    if (!patient) throw new ApiError(`Paciente no encontrado: ${id}`, 'ENTITY_NOT_FOUND', 404);
+
+    if (input.phone && input.phone !== patient.phone && patientsStore.some((p) => p.phone === input.phone && p.id !== id)) {
+      throw new ApiError(`Ya existe un paciente registrado con el teléfono ${input.phone}`, 'BUSINESS_LOGIC_ERROR', 422);
+    }
+
+    if (input.phone && input.phone !== patient.phone) {
+      for (const d of deliveriesStore) {
+        if (d.patientId === id) d.recipientPhone = input.phone;
+      }
+    }
+
+    patient.name = input.name ?? patient.name;
+    patient.phone = input.phone ?? patient.phone;
+    patient.email = input.email ?? patient.email;
+    patient.documentNumber = input.documentNumber ?? patient.documentNumber;
+    if (input.active !== undefined) patient.active = input.active;
+    patient.updatedAt = new Date().toISOString();
+
+    return patient;
   },
 };

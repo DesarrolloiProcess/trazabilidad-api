@@ -23,4 +23,6 @@ export interface IDeliveryRepository {
   getStatusHistory(deliveryId: string): Promise<IDeliveryStatusHistoryEntry[]>;
   create(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery>;
   update(entity: Delivery, config?: { tx?: ITransaction }): Promise<Delivery>;
+  /** Sincroniza el teléfono mostrado en las guías ya existentes de un paciente cuando el ADMIN corrige su contacto. */
+  updateRecipientPhoneByPatientId(patientId: string, phone: string, config?: { tx?: ITransaction }): Promise<void>;
 }

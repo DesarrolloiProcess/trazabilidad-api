@@ -107,4 +107,13 @@ export const httpApiClient: ApiClient = {
     request(`/portal/deliveries/${trackingNumber}${toQuery({ verificationValue })}`),
   listMyDeliveries: (trackingNumber, verificationValue) =>
     request(`/portal/my-deliveries/${trackingNumber}${toQuery({ verificationValue })}`),
+
+  listPatients: async () => {
+    const paged = await request<{ data: Awaited<ReturnType<ApiClient['listPatients']>> }>(
+      `/api/patients${toQuery({ page: 1, limit: 100 })}`,
+    );
+    return paged.data;
+  },
+  createPatient: (input) => request('/api/patients', { method: 'POST', body: JSON.stringify(input) }),
+  updatePatient: (id, input) => request(`/api/patients/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
 };

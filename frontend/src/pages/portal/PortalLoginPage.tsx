@@ -55,7 +55,7 @@ export function PortalLoginPage() {
             {...register('trackingNumber')}
           />
           <TextField
-            label="Teléfono o documento de identidad"
+            label="Teléfono, documento o correo"
             mono
             placeholder="3011234567"
             hint="El mismo con el que registramos tu pedido"

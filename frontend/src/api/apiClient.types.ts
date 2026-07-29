@@ -9,6 +9,9 @@ import type {
   LoginResultDto,
   MyDeliveriesDto,
   PagedResult,
+  PatientDto,
+  CreatePatientInput,
+  UpdatePatientInput,
   PendingVerificationDto,
   PublicDeliveryDto,
   RequestOtpResultDto,
@@ -77,4 +80,9 @@ export interface ApiClient {
 
   trackDelivery(trackingNumber: string, verificationValue: string): Promise<PublicDeliveryDto>;
   listMyDeliveries(trackingNumber: string, verificationValue: string): Promise<MyDeliveriesDto>;
+
+  /** Pacientes/usuarios finales (gestión de contacto para el Portal Cliente, ADMIN). */
+  listPatients(): Promise<PatientDto[]>;
+  createPatient(input: CreatePatientInput): Promise<PatientDto>;
+  updatePatient(id: string, input: UpdatePatientInput): Promise<PatientDto>;
 }

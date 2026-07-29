@@ -2,6 +2,7 @@ import type {
   DeliveryDto,
   DeliveryStatus,
   DistributionCenterDto,
+  PatientDto,
   RouteDto,
   RouteStatus,
   UserDto,
@@ -533,6 +534,7 @@ export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
   address: seed.address,
   recipientName: seed.recipientName,
   recipientPhone: seed.recipientPhone,
+  patientId: null,
   products: seed.products,
   status: seed.status,
   signatureUrl: seed.evidence?.signatureUrl ?? null,
@@ -551,6 +553,29 @@ export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
   updatedAt: seed.deliveredAt ?? seed.createdAt ?? iso(-1, 6),
   statusHistory: [{ status: seed.status, changedAt: seed.createdAt ?? iso(-1, 6) }],
 }));
+
+export const patients: PatientDto[] = [
+  {
+    id: 'patient-1',
+    name: 'Diana Marcela Torres Ríos',
+    phone: '3151234501',
+    email: 'diana.torres@example.co',
+    documentNumber: '1098765432',
+    active: true,
+    createdAt: iso(-10, 6),
+    updatedAt: iso(-10, 6),
+  },
+  {
+    id: 'patient-2',
+    name: 'Andrés Felipe Molano Beltrán',
+    phone: '3151234504',
+    email: null,
+    documentNumber: '10882661',
+    active: true,
+    createdAt: iso(-8, 6),
+    updatedAt: iso(-8, 6),
+  },
+];
 
 export function findClientById(clientId: string): MockClient {
   const client = clients.find((c) => c.id === clientId);
