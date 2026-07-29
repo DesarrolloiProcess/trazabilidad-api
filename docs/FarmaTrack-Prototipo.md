@@ -37,12 +37,15 @@ Entregado a transportador ──(conductor marca no entregado)─────▶
 Creada ──(se asigna un conductor)──▶ Asignada ──(conductor recibe la mercancía)──▶ Entregada a transportador ──▶ En curso ──▶ Completada / Con novedad
 ```
 
-- La planilla llega al sistema en estado **Creado** (importación manual desde el Portal Web, con un código de ruta único).
-- La **droguería de origen** verifica desde su app móvil que el contenido físico coincide con lo declarado — cada punto de la planilla debe marcarse antes de habilitar la confirmación. Al verificar, la entrega pasa a **Alistado**.
+- La planilla llega al sistema en estado **Creado** (importación manual desde el Portal Web, con un código de ruta único). Al abrir la planilla en la app de verificación, el sistema registra automáticamente el **inicio del alistamiento** (sin acción del usuario).
+- La **droguería de origen** verifica desde su app móvil que el contenido físico coincide con lo declarado — cada punto de la planilla debe marcarse antes de habilitar la confirmación. Al confirmar, además de marcar cada punto se **captura la firma de quien verifica**, y la entrega pasa a **Alistado** con el timestamp de fin de alistamiento (que también funciona como el momento en que la planilla queda liberada para asignar conductor).
+- Antes de asignar un conductor, el sistema exige que **todas las guías de la planilla ya estén verificadas** — no se puede asignar conductor a una planilla con guías todavía en estado Creado.
 - Desde el Portal Web se **asigna un conductor** a la ruta — cada droguería solo ve y asigna conductores de su propia sede, y la ruta pasa automáticamente a estado **Asignada**.
 - El conductor confirma que recibió la mercancía para transporte, y en el domicilio del paciente captura **firma, foto de soporte, nombre y cédula de quien recibe, y geolocalización real** del punto de entrega.
 - Al confirmarse la entrega, el pedido queda **habilitado para facturación** con el timestamp exacto, y se genera automáticamente el acta de entrega descargable en PDF.
 - Si el conductor no puede completar la entrega, la marca como **No entregado** con una observación obligatoria.
+
+**Trazabilidad completa:** tanto el detalle de la guía en el Portal Web como el acta en PDF muestran la línea de tiempo completa con sus 4 hitos — creación de la guía, inicio y fin de alistamiento (con la firma de quien verificó), y entrega final al paciente.
 
 ---
 
@@ -53,13 +56,13 @@ Creada ──(se asigna un conductor)──▶ Asignada ──(conductor recibe 
 **1. Inicio de sesión**
 ![Inicio de sesión](screenshots/01-login.png)
 
-**2. Entregas — listado, búsqueda y filtro por estado**
+**2. Entregas — listado, búsqueda, filtro por estado, orden por columna y paginación (30 por página)**
 ![Entregas](screenshots/03-panel-entregas.png)
 
 **3. Importar planilla (TXT)** — con selector de droguería de destino
 ![Importar planilla](screenshots/04-panel-import-dialog.png)
 
-**4. Detalle de entrega** — contenido del envío, mapa de ubicación, y evidencia de entrega (firma, foto, geolocalización) una vez confirmada
+**4. Detalle de entrega** — contenido del envío, mapa de ubicación, línea de tiempo completa (creación, inicio/fin de alistamiento con firma del verificador, entrega final) y evidencia de entrega (firma, foto, geolocalización) una vez confirmada
 ![Detalle de entrega](screenshots/07-panel-delivery-detail.png)
 
 **5. Rutas** — asignar conductor y controlar el avance de cada ruta del día
@@ -73,37 +76,43 @@ Creada ──(se asigna un conductor)──▶ Asignada ──(conductor recibe 
 
 **8. Usuarios** — crear, editar y desactivar cuentas (ADMIN, CEDI, CONDUCTOR)
 
-**9. Reportes** — resumen por estado con filtro de rango de fecha y droguería
+**9. Pacientes** — datos de contacto (teléfono, correo, documento) de cada paciente; se crean automáticamente al importar una planilla y pueden editarse aquí — al corregir el teléfono, se actualiza en cascada en todas sus guías
+![Pacientes](screenshots/21-panel-pacientes.png)
 
-**10. Configuración** — datos de droguería y umbral de alertas
+**10. Reportes** — resumen por estado con filtro de rango de fecha y droguería
+
+**11. Configuración** — datos de droguería y umbral de alertas
 
 ### App de verificación (rol CEDI — operación diaria de cada droguería)
 
-**11. Planillas por verificar**
+**12. Planillas por verificar** — por defecto solo se muestran las pendientes, separadas del historial ya verificado
 ![Lista de verificación](screenshots/17-cdi-lista.png)
 
-**12. Checklist de verificación** — cada punto de la planilla debe marcarse antes de habilitar la confirmación
+**13. Checklist de verificación** — cada punto de la planilla debe marcarse antes de habilitar la confirmación
 ![Checklist](screenshots/18-cdi-checklist.png)
+
+**14. Firma de quien verifica** — una vez marcados todos los puntos, se exige la firma de quien verificó antes de confirmar; el sistema registra automáticamente el inicio y fin de esta actividad
+![Firma de verificación](screenshots/22-cdi-firma-verificacion.png)
 
 ### App del Conductor
 
-**13. Mi ruta de hoy** — muestra automáticamente la ruta vigente (la última asignada al conductor), con un buscador para cambiar a otra ruta propia por código si lo necesita
+**15. Mi ruta de hoy** — muestra automáticamente la ruta vigente (la última asignada al conductor), con un buscador para cambiar a otra ruta propia por código si lo necesita; por defecto solo muestra los puntos pendientes, con un botón para ver también los ya completados
 ![Mi ruta](screenshots/10-conductor-mi-ruta.png)
 
-**14. Captura de entrega** — recibir para transporte, luego firma, foto, datos de quien recibe y geolocalización real
+**16. Captura de entrega** — recibir para transporte, luego firma, foto, datos de quien recibe y geolocalización real
 ![Captura de entrega](screenshots/12-conductor-captura-llena.png)
 
 La firma se captura con un lienzo real (no una imagen genérica), la foto usa la cámara del dispositivo, y la ubicación usa la geolocalización real del navegador en el momento de la entrega — no hay coordenadas simuladas ni de relleno.
 
 ### Portal del Paciente (público, sin necesidad de cuenta)
 
-**15. Consulta de pedido** — por número de guía + teléfono o documento
+**17. Consulta de pedido** — por número de guía + teléfono, documento o correo
 ![Consulta de pedido](screenshots/13-portal-login.png)
 
-**16. Mis pedidos**
+**18. Mis pedidos**
 ![Mis entregas](screenshots/14-portal-mis-entregas.png)
 
-**17. Detalle de guía** — con evidencia de entrega (firma y foto) una vez el pedido fue entregado
+**19. Detalle de guía** — con evidencia de entrega (firma y foto) una vez el pedido fue entregado
 ![Detalle con evidencia](screenshots/19-portal-evidencia.png)
 
 ---
@@ -132,6 +141,14 @@ La firma se captura con un lienzo real (no una imagen genérica), la foto usa la
 | Reportes por estado, con filtro de fecha y droguería | ✅ |
 | Configuración de droguería y umbral de alertas | ✅ |
 | Permisos por rol validados en backend (no solo ocultos en la interfaz) | ✅ |
+| Gestión de pacientes (teléfono, correo, documento) con sincronización en cascada a sus guías | ✅ |
+| Acceso al Portal del Paciente también por correo (además de teléfono/documento) | ✅ |
+| Firma de quien verifica en el CDI + registro automático de inicio/fin de alistamiento | ✅ |
+| Línea de tiempo completa (creación, alistamiento, entrega) en el detalle de guía y en el acta PDF | ✅ |
+| Orden dinámico por columna y paginación (30 por página) en el listado de Entregas | ✅ |
+| Vista de CDI separada en pendientes de verificación / historial | ✅ |
+| Vista del conductor oculta por defecto las entregas ya completadas | ✅ |
+| No se puede asignar conductor a una planilla con guías sin verificar | ✅ |
 | Notificación por WhatsApp al paciente | ⛔ Evento ya se dispara; falta conectar un proveedor real |
 | Correo de confirmación de carga exitosa | ⛔ Pendiente, sin proveedor de correo conectado |
 | Proveedor real de OTP/SMS | ⛔ El código de recuperación se muestra en pantalla, sin envío real |
@@ -169,10 +186,13 @@ Usuarios de prueba (contraseña `Farmatrack2026!` para todos):
 | CONDUCTOR | Carlos Peña | `carlos.pena@farmatrack.co` | Droguería Bogotá Norte |
 | CONDUCTOR | — | `conductor.medellin@test.com` | Droguería Medellín |
 
-**Portal del paciente** (consulta por guía + teléfono, sin necesidad de contraseña):
+Nota de menú: el Portal Web ya no muestra "App Conductor" ni "Verificación de planillas" como accesos directos para ADMIN — son pantallas pensadas para el celular de CEDI y CONDUCTOR, que sí las conservan en su propio menú.
 
-| Guía | Teléfono | Estado |
+**Portal del paciente** (consulta por guía + teléfono, documento o correo, sin necesidad de contraseña):
+
+| Guía | Acceso | Estado |
 |---|---|---|
-| `FARMA-INTERMEDICA` | `3213344556` | Creado |
-| `FARMA-90001` | `3101234567` | Entregado, con evidencia completa |
-| `FARMA-00801` | `3151234513` | No entregado |
+| `FARMA-DOC-CREADO` | teléfono `3201234567` | Creado |
+| `FARMA-90001` | teléfono `3101234567` | Entregado, con evidencia completa |
+| `FARMA-00801` | teléfono `3151234513` | No entregado |
+| `FARMA-00300` | correo `diana.torres.test@example.co` | Alistado (ejemplo de acceso por correo) |
