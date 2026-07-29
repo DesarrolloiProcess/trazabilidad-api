@@ -549,6 +549,7 @@ export const deliveries: DeliveryDto[] = seeds.map((seed) => ({
   invoicedAt: seed.invoiced ? seed.deliveredAt : null,
   createdAt: seed.createdAt ?? iso(-1, 6),
   updatedAt: seed.deliveredAt ?? seed.createdAt ?? iso(-1, 6),
+  statusHistory: [{ status: seed.status, changedAt: seed.createdAt ?? iso(-1, 6) }],
 }));
 
 export function findClientById(clientId: string): MockClient {

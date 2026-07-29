@@ -342,6 +342,7 @@ export const mockApiClient: ApiClient = {
         invoicedAt: null,
         createdAt: now,
         updatedAt: now,
+        statusHistory: [{ status: 'creado', changedAt: now }],
       };
 
       deliveriesStore.unshift(delivery);
@@ -449,6 +450,7 @@ export const mockApiClient: ApiClient = {
     for (const delivery of pending) {
       delivery.status = 'alistado';
       delivery.updatedAt = now;
+      delivery.statusHistory.push({ status: 'alistado', changedAt: now });
     }
 
     return pending;
@@ -484,8 +486,10 @@ export const mockApiClient: ApiClient = {
       throw new ApiError(`No se puede cambiar la entrega de '${delivery.status}' a '${status}'`, 'BUSINESS_LOGIC_ERROR', 422);
     }
 
+    const now = new Date().toISOString();
     delivery.status = status;
-    delivery.updatedAt = new Date().toISOString();
+    delivery.updatedAt = now;
+    delivery.statusHistory.push({ status, changedAt: now });
     return delivery;
   },
 
@@ -509,6 +513,7 @@ export const mockApiClient: ApiClient = {
     delivery.longitude = data.longitude;
     delivery.deliveredAt = now;
     delivery.updatedAt = now;
+    delivery.statusHistory.push({ status: 'entregado_cliente', changedAt: now });
 
     return delivery;
   },
@@ -528,6 +533,7 @@ export const mockApiClient: ApiClient = {
     delivery.observation = observation;
     delivery.deliveredAt = now;
     delivery.updatedAt = now;
+    delivery.statusHistory.push({ status: 'no_entregado', changedAt: now });
 
     return delivery;
   },
