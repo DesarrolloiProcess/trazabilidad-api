@@ -45,8 +45,11 @@ const NAV_ENTRIES: NavEntry[] = [
   },
   { to: '/panel/reportes', label: 'Reportes', roles: ['ADMIN'] },
   { to: '/panel/configuracion', label: 'Configuración', roles: ['ADMIN'] },
-  { to: '/cdi', label: 'Verificación de planillas', roles: ['ADMIN', 'CEDI'] },
-  { to: '/conductor', label: 'App Conductor', roles: ['ADMIN', 'CONDUCTOR'] },
+  // Se quitan del menu de ADMIN a proposito (feedback 2.4): son pantallas pensadas para
+  // movil que le saturan el menu de escritorio sin uso real -- CEDI/CONDUCTOR conservan
+  // su propio acceso, y ADMIN sigue pudiendo entrar por URL directa si lo necesita.
+  { to: '/cdi', label: 'Verificación de planillas', roles: ['CEDI'] },
+  { to: '/conductor', label: 'App Conductor', roles: ['CONDUCTOR'] },
   { to: '/panel/perfil', label: 'Mi perfil', roles: ['ADMIN', 'CEDI', 'CONDUCTOR'] },
 ];
 

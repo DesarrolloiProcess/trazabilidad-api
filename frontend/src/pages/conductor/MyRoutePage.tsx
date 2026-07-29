@@ -21,6 +21,9 @@ export function MyRoutePage() {
   const [codeInput, setCodeInput] = useState('');
   const [switchError, setSwitchError] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
+  // Por defecto solo se muestran los puntos pendientes -- una ruta larga ya avanzada no debe
+  // saturarse con las entregas ya resueltas mezcladas con las que aun requieren accion.
+  const [showCompleted, setShowCompleted] = useState(false);
 
   const routesQuery = useQuery({
     queryKey: ['routes', 'driver', user?.id],
@@ -71,6 +74,7 @@ export function MyRoutePage() {
   const done = deliveries.filter((d) => TERMINAL_STATUSES.has(d.status)).length;
   const pending = deliveries.length - done;
   const nextStop = deliveries.find((d) => !TERMINAL_STATUSES.has(d.status));
+  const visibleDeliveries = showCompleted ? deliveries : deliveries.filter((d) => !TERMINAL_STATUSES.has(d.status));
 
   return (
     <ConductorLayout title="Mi ruta de hoy" subtitle={activeRoute ? `${user?.name} · Ruta ${activeRoute.code}` : user?.name}>
@@ -116,12 +120,29 @@ export function MyRoutePage() {
             <SummaryChip label="Pendientes" value={pending} tone="text-thermal" />
           </div>
 
+          {done > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowCompleted((v) => !v)}
+              className="mb-3 text-xs font-semibold text-cold hover:underline"
+            >
+              {showCompleted ? '← Ver solo pendientes' : `Ver completadas (${done})`}
+            </button>
+          )}
+
           {deliveriesQuery.isLoading ? (
             <SealLoader label="Cargando puntos de entrega…" />
+          ) : visibleDeliveries.length === 0 ? (
+            <EmptyState title="Sin pendientes" description="Ya completaste todos los puntos de esta ruta." />
           ) : (
             <ul className="space-y-2.5">
-              {deliveries.map((delivery, index) => (
-                <Stop key={delivery.id} delivery={delivery} index={index + 1} onOpen={() => navigate(`/conductor/entregas/${delivery.id}`)} />
+              {visibleDeliveries.map((delivery) => (
+                <Stop
+                  key={delivery.id}
+                  delivery={delivery}
+                  index={deliveries.indexOf(delivery) + 1}
+                  onOpen={() => navigate(`/conductor/entregas/${delivery.id}`)}
+                />
               ))}
             </ul>
           )}
